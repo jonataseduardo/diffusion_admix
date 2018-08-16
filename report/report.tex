@@ -498,24 +498,41 @@ ate frequency 0 and 1 so it is convinient to write
 where $K_0$ and $K_1$ are the number of sites at frequency 0 and 1 and 
 $\delta_{0,k}$ is the Kronecker's delta. 
 
-\begin{align}
-  \dot \mu_k 
-  &= \int_{0^+}^{1^-}dx x^k \del t \phi(x,t) 
-  + \dot K_0 \delta_{0,k} + \dot K_1 
-  \nonumber \\
-  &= \del t \int_{0^+}^{1^-}dx x^k \phi(x,t) 
-  + \dot K_0 \delta_{0,k} + \dot K_1 
-\end{align}
 
 then we can calculate the moments of the admix population as
 \begin{align}
-  \mu_{3,k} &= \int_0^1 dx_1 dx_2 dx_3 x_3^k \phi(x_1, x_2) 
+  \mu_{3,k} &= \int_0^1 \int_0^1\int_0^1dx_1 dx_2 dx_3 x_3^k \phi(x_1, x_2) 
   \delta(x_3 - \alpha_1 x_1 - \alpha_2 x_2)
   \nonumber \\
-  &= \int_0^1 dx_1 dx_2 (\alpha_1 x_1 +  \alpha_2 x_2) ^k \phi(x_1, x_2)
+  &= \int_0^1 \int_0^1dx_1 dx_2 (\alpha_1 x_1 +  \alpha_2 x_2) ^k \phi(x_1, x_2)
   \nonumber \\
-  &= \int_0^1 dx_1 dx_2 \sum_{j=1}^k\binom{j}{k}
+  &= \int_0^1 \int_0^1dx_1 dx_2 \sum_{j=1}^k\binom{j}{k}
   (\alpha_1 x_1)^j(\alpha_2x_2)^{k -j} \phi(x_1, x_2)
+  \nonumber \\
+  &= \sum_{j=1}^k\binom{j}{k} \alpha_1^j\alpha_2^{k -j} 
+  \int_0^1 \int_0^1dx_1 dx_2 x_1^jx_2^{k -j} \phi(x_1, x_2)
+  \nonumber \\
+  &= \sum_{j=1}^k\binom{j}{k} \alpha_1^j\alpha_2^{k -j} 
+  \mu_{j,k-j}^{1,2}
+\end{align}
+
+where 
+$\mu_{j,k-j}^{1,2} = 
+\int_0^1 \int_0^1dx_1 dx_2 x_1^jx_2^{k -j} \phi(x_1,x_2)$
+
+The change in time of the moments of the admix populations is
+\begin{align}
+  \dot \mu_{3,k}
+  &= \int_{0^+}^{1^-} \int_{0^+}^{1^-} \int_{0^+}^{1^-} dx_1 dx_2 dx_3 x_3^k \del t 
+  \phi(x_1, x_2, x_3,t) 
+  + \dot K_{3,0} \delta_{0,k} + \dot K_{3,1}
+  \nonumber \\
+  &= \del t \int_{0^+}^{1^-}\int_{0^+}^{1^-} \int_{0^+}^{1^-} dx_1 dx_2 dx_3 x_3^k 
+  \phi(x_1, x_2, x_3,t) 
+  + \dot K_{3,0} \delta_{0,k} + \dot K_{3,1}
+  \nonumber \\
+  &= \sum_{j=1}^k\binom{j}{k} \alpha_1^j\alpha_2^{k -j} 
+  \del t \mu_{j,k-j}^{1,2}
 \end{align}
 
 The diffusion equation for 2 populations is given by 
@@ -566,6 +583,8 @@ We can write
   \nonumber \\
   \quad &+\frac{u}{(2N_1)^{k -1}} +\frac{u}{(2N_2)^{j -1}}
   + \dot K_0^{12} \delta_{0,k} + \dot K_1^{12} 
+  & & \bigg\} I_{0}
+  \nonumber \\
   \label{eq:dmk3}
 \end{align}
 
@@ -605,7 +624,6 @@ for $k = 0$ it follows
   \frac{1}{4N_2}\int_{0+}^{1-} dx_1\phi(x_1, 1^-) 
 \end{align}
 
-
 For $k \geq 1$ we can solve by parts the integrals \eqref{eq:dmk3} as follows
 \begin{align}
   I_{2,1} &= -s\{[g_1(x_1)\psi_1^j(x_1)x_1^k]_{0^+}^{1^-} - 
@@ -637,6 +655,24 @@ For $k \geq 1$ we can solve by parts the integrals \eqref{eq:dmk3} as follows
   %\nonumber \\
   % &= \dot K_1 - \frac{k(k-1)}{4N}(\mu_k - \mu_{k-1})
 \end{align}
+
+Finally
+\begin{align}
+  \dot \mu_{kj}^{12} &= I_{1,1} + I_{1,2} + I_{2,1} + I_{2,2} + I_0
+  \nonumber \\
+   &= \frac{1}{4N_1}\int_{0^+}^{1^-} dx_2 x_2^j \phi(1^-,x_2) 
+   + \frac{k(k-1)}{4N_1}(\mu_{k-1,j}^{12} -\mu_{k,j}^{12})
+   \nonumber \\
+   &\quad + \frac{1}{4N_2}\int_{0^+}^{1^-} dx_1 x_1^k \phi(x_1,1^-) 
+   + \frac{j(j-1)}{4N_2}(\mu_{k,j-1}^{12} - \mu_{k,j}^{12})
+   \nonumber \\
+  &\quad + sk [h(\mu_{k,j}^{12} - \mu_{k + 1,j}^{12}) + 
+  (1 - 2 h)(\mu_{k + 1,j}^{12} -\mu_{k + 2,j}^{12})]
+  \nonumber \\
+  &\quad+ sj [h(\mu_{k,j}^{12} - \mu_{k,j + 1}^{12}) + 
+  (1 - 2 h)(\mu_{k,j + 1}^{12} -\mu_{k,j + 2}^{12})]
+\end{align} 
+
 
 \footnotesize
 \twocolumn
