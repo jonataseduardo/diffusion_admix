@@ -5,17 +5,11 @@ import numpy
 import OutOfAfrica as ooa
 from collections import OrderedDict
 
-def test(n, theta):
-    sts = moments.LinearSystem_1D.steady_state_1D(n, theta = theta)
-    fs = moments.Spectrum(sts)
-
-    def mu_k_1d(fs, k):
-        ns = fs.sample_sizes[0]
-        # sample frequencies p 
-        p = np.arange(0, ns + 1, dtype=float) / ns
-        return (fs *(p ** k)).sum()
-
-    print(n, mu_k_1d(fs, 1), mu_k_1d(fs, 2))
+def onepop_moments(fs, k):
+    ns = fs.sample_sizes[0]
+    # sample frequencies p 
+    p = np.arange(0, ns + 1, dtype=float) / ns
+    return (fs *(p ** k)).sum()
 
 def cross_moments(fs, k):
     r = fs.Npop
@@ -43,8 +37,6 @@ def cross_moments(fs, k):
     mu_k = x_k * fstilde
 
     return mu_k.sum()
-
-fs*numpy.arange(fs.sample_sizes + 1) /fs.sample_sizes
 
 def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs, 
                            mAfB, mAfEu, mAfAs, mEuAs, TAf, TB, TEuAs), 
@@ -135,7 +127,6 @@ params = np.array([2.10065897, 0.25066579, 0.22247642, 3.05297944,
                    0.09022469, 5.82773903, 3.79104318, 0.25730946,
                    0.12569788, 1.07182332, 0.36429414, 0.1108222, 
                    0.07072507])
-
 
 (nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,mAfB, mAfEu, mAfAs, mEuAs, TAf, TB, TEuAs) = params
 fs_t = OutOfAfrica_stepwise(params, (4, 4, 4), 20)
