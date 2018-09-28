@@ -132,7 +132,6 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
 
 def OOA_stats(fs_history, s, h):
     time = list()
-    time = 
 
     np = fs_history[21][1].Npop
     rnp = range(np)
@@ -140,12 +139,13 @@ def OOA_stats(fs_history, s, h):
     
     stats_pop = []
     for i in lpop:
+        pop_id = i[0][0]
+        time = fs_history[21][0]
         fs_i = fs_history[21][1].marginalize(i[1])
         fs_i.pi()
         mutation_load(fs_i, s, h)
         efficacy_of_selection(fs_i, s, h)
-        print(fs_i)
-
+        print(pop_id, fs_i, time)
 
 
 def mutation_load(fs, s, h):
@@ -171,7 +171,6 @@ def efficacy_of_selection(fs, s, h):
     else:
         w =  0.5 * h * Gamma_kh(fs, 1, h) + (1. - 2. * h) * Gamma_kh(fs, 2, h)
         return  s * s * w
-
 
 
 mutation_load(fs, 0.1, 0.5)
