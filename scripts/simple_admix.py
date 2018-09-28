@@ -131,21 +131,33 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
     return fs_history
 
 def OOA_stats(fs_history, s, h):
-    time = list()
 
-    np = fs_history[21][1].Npop
-    rnp = range(np)
-    lpop = [(list(set(rnp) ^ set(i)), i) for i in combinations(rnp, np - 1)]
-    
-    stats_pop = []
-    for i in lpop:
-        pop_id = i[0][0]
-        time = fs_history[21][0]
-        fs_i = fs_history[21][1].marginalize(i[1])
-        fs_i.pi()
-        mutation_load(fs_i, s, h)
-        efficacy_of_selection(fs_i, s, h)
-        print(pop_id, fs_i, time)
+    stats_pop = dict()
+    stats_pop["step"] = []
+    stats_pop["time"] = []
+    stats_pop["pop_id"] = []
+    stats_pop["pi"] = []
+    stats_pop["load"] = []
+    stats_pop["efficacy"] = []
+
+    for step in fs_history.keys():
+        np = fs_history[step][1].Npop
+        rnp = range(np)
+        lpop = [(list(set(rnp) ^ set(i)), i) for i in combinations(rnp, np - 1)]
+        for i in lpop:
+            stats_pop["step"] += [step]
+            stats_pop["time"] += [fs_history[step][0]]
+            stats_pop["pop_id"] += [i[0][0]]
+            try:
+                fs_i = fs_history[step][1].marginalize(i[1])
+            except:
+                fs_i = fs_history[step][1]
+
+            stats_pop["pi"] += [fs_i.pi()]
+            stats_pop["load"] += [mutation_load(fs_i, s, h)]
+            stats_pop["efficacy"] += [efficacy_of_selection(fs_i, s, h)]
+
+    return pandas.DataFrame.from_dict(stats_pop)
 
 
 def mutation_load(fs, s, h):
