@@ -3,12 +3,19 @@ import matplotlib.pyplot as pl
 import numpy as np
 import numpy
 import OutOfAfrica as ooa
+import pandas
 from collections import OrderedDict
+from itertools import combinations
+
+
+
+def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 def onepop_moments(fs, k):
     ns = fs.sample_sizes[0]
     # sample frequencies p 
-    p = np.arange(0, ns + 1, dtype=float) / ns
+    p = numpy.arange(0, ns + 1, dtype=float) / ns
     return (fs *(p ** k)).sum()
 
 def cross_moments(fs, k):
@@ -56,7 +63,7 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
     dtB = TB / niterB
     dtEuAs = TEuAs / niterEuAs
 
-    time_sfs = OrderedDict()
+    fs_history = OrderedDict()
 
     #first step: a single population
     sts = moments.LinearSystem_1D.steady_state_1D(n1+n2+n3)
@@ -73,7 +80,7 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
             print('before split' , step, time )
             #integrate for time TAf (with constant population)
             fs.integrate([nuAf], dt, dt)
-            time_sfs[step] = [time, fs]
+            fs_history[step] = [time, fs]
             step += 1
 
         if(time > TAf and time <= 1.001 * (TAf + TB)):
@@ -82,13 +89,13 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
                 split_1 = False
                 dt = dtB
                 fs = moments.Manips.split_1D_to_2D(fs, n1, n2+n3)
-                time_sfs[step] = [time, fs]
+                fs_history[step] = [time, fs]
                 step += 1
                 mig1=numpy.array([[0, mAfB],[mAfB, 0]])
 
             print('after first split' , time )
             fs.integrate([nuAf, nuB], dt, 0.5 * dt, m=mig1)
-            time_sfs[step] = [time, fs]
+            fs_history[step] = [time, fs]
             step += 1
 
         if(time > TAf + TB and time <= 1.001 * (TAf + TB + TEuAs)):
@@ -97,7 +104,7 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
                 split_2 = False
                 dt = dtEuAs
                 fs = moments.Manips.split_2D_to_3D_2(fs, n2, n3)
-                time_sfs[step] = [time, fs]
+                fs_history[step] = [time, fs]
                 step += 1
                 # migration rates matrix
                 mig2=numpy.array([[0, mAfEu, mAfAs],
@@ -116,31 +123,76 @@ def OutOfAfrica_stepwise((nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,
             mig2=numpy.array([[0, mAfEu, mAfAs],[mAfEu, 0, mEuAs],[mAfAs, mEuAs, 0]])
             fs.integrate(nu2, dt, 0.5 * dt, m=mig2)
 
-            time_sfs[step] = [time, fs]
+            fs_history[step] = [time, fs]
             nuEu0t = nuEu0t*(nuEu/nuEu0t)**(dt/TEuAs)
             nuAs0t = nuAs0t*(nuAs/nuAs0t)**(dt/TEuAs)
             step += 1
                                 
-    return time_sfs
+    return fs_history
+
+def OOA_stats(fs_history, s, h):
+    time = list()
+    time = 
+
+    np = fs_history[21][1].Npop
+    rnp = range(np)
+    lpop = [(list(set(rnp) ^ set(i)), i) for i in combinations(rnp, np - 1)]
+    
+    stats_pop = []
+    for i in lpop:
+        fs_i = fs_history[21][1].marginalize(i[1])
+        fs_i.pi()
+        mutation_load(fs_i, s, h)
+        efficacy_of_selection(fs_i, s, h)
+        print(fs_i)
+
+
+
+def mutation_load(fs, s, h):
+    mu_1 = onepop_moments(fs, 1)
+    if(isclose(h, 0.5)): 
+        return s * mu_1 
+    else:
+        mu_2 = onepop_moments(fs, 2)
+        return s * (2 * h * mu_1 + (1 - 2 * h) * mu_2)
+
+def pi_k(fs, k):
+    return 2. * (onepop_moments(fs, k) - onepop_moments(fs, k-1))
+
+def Gamma_kh(fs, k, h):
+    if(isclose(h, 0.5)): 
+        return pi_k(fs, k) 
+    else:
+        return 2. * (h * pi_k(fs, k) + (1. - 2. * h) * pi_k(fs, k + 1))
+
+def efficacy_of_selection(fs, s, h):
+    if(isclose(h, 0.5)): 
+        return s * s * Gamma_kh(fs, 1, h) / 4.
+    else:
+        w =  0.5 * h * Gamma_kh(fs, 1, h) + (1. - 2. * h) * Gamma_kh(fs, 2, h)
+        return  s * s * w
+
+
+
+mutation_load(fs, 0.1, 0.5)
+efficacy_of_selection(fs, 0.1, 0.3)
+pi_k(fs, 2)
 
 params = np.array([2.10065897, 0.25066579, 0.22247642, 3.05297944,
                    0.09022469, 5.82773903, 3.79104318, 0.25730946,
                    0.12569788, 1.07182332, 0.36429414, 0.1108222, 
                    0.07072507])
 
-(nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs,mAfB, mAfEu, mAfAs, mEuAs, TAf, TB, TEuAs) = params
-fs_t = OutOfAfrica_stepwise(params, (4, 4, 4), 20)
+(nuAf, nuB, nuEu0, nuEu, nuAs0, nuAs, 
+ mAfB, mAfEu, mAfAs, mEuAs, TAf, TB, TEuAs) = params
 
-(5. / (5. - 1.)) * 2 * (cross_moments(fs_t[1][1], 1) - cross_moments(fs_t[1][1], 2))
-fs_t[1][1].pi()
+fs_history = OutOfAfrica_stepwise(params, (4, 4, 4), 20)
 
-fs_admix = moments.Manips.admix_into_new(fs, 0, 1, 2, 0.5)
+fs_history[1][1].pi()
 
-sts = moments.LinearSystem_1D.steady_state_1D(9, 1)
-fs = moments.Spectrum(sts)
-n = fs.sample_sizes
-(n / (n - 1.)) * 2. * (cross_moments(fs, 1) - cross_moments(fs, 2))
-fs.pi()
+#fs_admix = moments.Manips.admix_into_new(fs, 0, 1, 2, 0.5)
 
+#sts = moments.LinearSystem_1D.steady_state_1D(9, 1)
+#fs = moments.Spectrum(sts)
 #fs = moments.Manips.split_1D_to_2D(fs, 3, 6)
 #fs = moments.Manips.split_2D_to_3D_2(fs, 3, 3)
