@@ -1,9 +1,25 @@
+"""
+File: slim_output_parser.py
+Author: Jonatas Cesar   
+Email: jonataseduardo@gmail.com
+Github: https://github.com/jonataseduardo   
+Description: Parse the default output SliM3.
+For a detailed description of the output see 
+section 4.2 of the SliM manual
+"""
 import pandas
 
-file_name = 'ooa_output2.txt'
+def slim_output_parser(file_name):
+    """
+    Description: Parse the default output SliM3.
+    For a detailed description of the output see 
+    section 4.2 of the SliM manual
 
-def slim_output_parser(file_name, 
-        return_mutation_only = True):
+    param file_name: path to the Slim3 output file
+    ptype: string
+    return (mutations_df, genomes_df, individuals_df):
+    rtype: (pandas.DataFrame, pandas.DataFrame, pandas.DataFrame)
+    """
 
     with open(file_name) as f:
         content = f.readlines()
@@ -45,11 +61,5 @@ def slim_output_parser(file_name,
                  9: 'focal_pop_id'}
 
     mutations_df.rename(columns = m_columns, inplace = True )
-    genomes_df
 
-    if(return_mutation_only):
-        return mutations_df
-    else:
-        return (mutations_df, genomes_df, individuals_df)
-
-slim_output_parser(file_name, return_mutation_only = False)
+    return (mutations_df, genomes_df, individuals_df)
