@@ -63,3 +63,20 @@ def slim_output_parser(file_name):
     mutations_df.rename(columns = m_columns, inplace = True )
 
     return (mutations_df, genomes_df, individuals_df)
+
+mutations_df = slim_output_parser(file_name)[0] 
+
+
+def make_slim_sfs(mutations_df):
+
+    aux = mutations_df.pivot_table(index = ['m_type', 'position'],  
+                                   columns = 'focal_pop_id',
+                                   values = 'allele_count', 
+                                   aggfunc = lambda y: y ).fillna(0)
+
+    cols = ['m_type'] + ['p' + str(i + 1) for i in range(aux.shape[1])]
+
+    aux.groupby(cols).agg('size')
+
+
+
