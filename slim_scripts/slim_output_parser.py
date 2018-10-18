@@ -62,21 +62,44 @@ def slim_output_parser(file_name):
 
     mutations_df.rename(columns = m_columns, inplace = True )
 
+    def change_to_numeric(x):
+        try:
+            z =  pandas.to_numeric(x)
+        except:
+            z = x
+        return z
+
+    mutations_df = mutations_df.apply(change_to_numeric)
+
     return (mutations_df, genomes_df, individuals_df)
 
 mutations_df = slim_output_parser(file_name)[0] 
+mutations_df = slim_output_parser("split2.txt")[0] 
+
+mutations_df[mutations_df.position == 10]
 
 
 def make_slim_sfs(mutations_df):
 
-    aux = mutations_df.pivot_table(index = ['m_type', 'position'],  
+    mutations_df.groupby(["focal_pop_id", "allele_count"]
+                         ).agg({"position":"count"}).reset_index()
+
+
+    aux = mutations_df.pivot_table(index = ['position'],  
                                    columns = 'focal_pop_id',
                                    values = 'allele_count', 
-                                   aggfunc = lambda y: y ).fillna(0)
+                                   aggfunc = sum ).fillna(0)
+    aux.shape
+    aux.head()
 
-    cols = ['m_type'] + ['p' + str(i + 1) for i in range(aux.shape[1])]
+    cols = ['p' + str(i + 1) for i in range(aux.shape[1])]
+    cols
 
-    aux.groupby(cols).agg('size')
+    sfs_vals = aux.groupby(cols).agg('size')
+
+    sfs_vals.reset_index()
+
+    mutations_df.groupby(["allele_count"]).agg({"position":"count"})
 
 
 
