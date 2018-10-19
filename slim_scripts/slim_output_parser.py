@@ -8,6 +8,7 @@ For a detailed description of the output see
 section 4.2 of the SliM manual
 """
 import pandas
+import numpy
 
 def slim_output_parser(file_name):
     """
@@ -105,18 +106,12 @@ def make_slim_sfs(mutations_df):
     #the pivot_table is converting an integer to a flot.
     sfs_vals = sfs_vals.apply(lambda x : pandas.to_numeric(x, downcast = 'signed'))
 
-    return sfs_vals
+    dim = mutations_df.groupby('focal_pop_id').agg({'sample_size': max})
 
+    sfs = numpy.zeros(dim.values.reshape(-1) + 1, dtype = int)
 
+    idx = [sfs_vals.loc[:, i].values for i in cols]
 
-file_name = "split2.txt"
-mutations_df = slim_output_parser(file_name)[0] 
+    sfs[tuple(idx)] = sfs_vals.num_counts.values
 
-mutations_df.dtypes
-mutations_df.head()
-
-x = make_slim_sfs(mutations_df)
-x
-x.num_counts * x.p1.astype(float)
-(x.num_counts * x.p1.astype(float)).mean()
-
+    return (sfs, sfs_vals)
