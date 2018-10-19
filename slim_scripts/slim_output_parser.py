@@ -34,16 +34,19 @@ def slim_output_parser(file_name):
 
     pop_id = 0
     for line in content:
+        if line.startswith("#OUT"):
+            lsp =  line.split()
+            pop_id = lsp[3]
+            sample_size = lsp[4]
         if line == "Mutations:":
            line_key = line 
-           pop_id += 1
         if line == "Individuals:":
            line_key = line 
         if line == "Genomes:":
            line_key = line 
         if line_key is not None:
             if line_key != line and not line.startswith("#"): 
-                slim_data[line_key] += [line.split() + ['p' + str(pop_id)]]
+                slim_data[line_key] += [line.split() + [pop_id, sample_size]]
      
     mutations_df = pandas.DataFrame(slim_data["Mutations:"])
     genomes_df = pandas.DataFrame(slim_data["Genomes:"])
@@ -58,7 +61,8 @@ def slim_output_parser(file_name):
                  6: 'origin_pop',    
                  7: 'birth_time',    
                  8: 'allele_count',
-                 9: 'focal_pop_id'}
+                 9: 'focal_pop_id',
+                 10: 'sample_size'}
 
     mutations_df.rename(columns = m_columns, inplace = True )
 
@@ -73,33 +77,46 @@ def slim_output_parser(file_name):
 
     return (mutations_df, genomes_df, individuals_df)
 
-mutations_df = slim_output_parser(file_name)[0] 
-mutations_df = slim_output_parser("split2.txt")[0] 
-
-mutations_df[mutations_df.position == 10]
-
-
 def make_slim_sfs(mutations_df):
+    """
+    Evaluate the Site Freqrency Spectrum of Slim3 simulations. 
 
-    mutations_df.groupby(["focal_pop_id", "allele_count"]
-                         ).agg({"position":"count"}).reset_index()
+    Params mutation_df: pandas.DataFrame with position focal_pop_id and
+    allele_count colums
 
+    Return numpy.array: site frequency spectrum of populations 
+    """
 
+    #Eventually the more the one mutation can appear in one loci. 
+    #see slim documentation introduction
+    #aggfunc = max selects the oldest mutation with high probability
     aux = mutations_df.pivot_table(index = ['position'],  
                                    columns = 'focal_pop_id',
                                    values = 'allele_count', 
-                                   aggfunc = sum ).fillna(0)
-    aux.shape
-    aux.head()
+                                   aggfunc = max ).fillna(0)
 
     cols = ['p' + str(i + 1) for i in range(aux.shape[1])]
-    cols
 
     sfs_vals = aux.groupby(cols).agg('size')
+    sfs_vals.name = 'num_counts'
 
-    sfs_vals.reset_index()
+    sfs_vals = sfs_vals.reset_index()
 
-    mutations_df.groupby(["allele_count"]).agg({"position":"count"})
+    #the pivot_table is converting an integer to a flot.
+    sfs_vals = sfs_vals.apply(lambda x : pandas.to_numeric(x, downcast = 'signed'))
+
+    return sfs_vals
 
 
+
+file_name = "split2.txt"
+mutations_df = slim_output_parser(file_name)[0] 
+
+mutations_df.dtypes
+mutations_df.head()
+
+x = make_slim_sfs(mutations_df)
+x
+x.num_counts * x.p1.astype(float)
+(x.num_counts * x.p1.astype(float)).mean()
 
