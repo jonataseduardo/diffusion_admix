@@ -1,0 +1,178 @@
+\begin{thebibliography}{24}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Adzhubei et~al.(2010)Adzhubei, Schmidt, Peshkin, Ramensky, Gerasimova,
+  Bork, Kondrashov, and Sunyaev]{Adzhubei2010}
+I.~a. Adzhubei, S.~Schmidt, L.~Peshkin, et~al.
+\newblock {A method and server for predicting damaging missense mutations.}
+\newblock \emph{Nature methods}, 7\penalty0 (4):\penalty0 248--249, 2010.
+\newblock ISSN 1548-7091.
+
+\bibitem[Do et~al.(2015)Do, Balick, Li, and Adzhubei]{Do2015}
+R.~Do, D.~Balick, H.~Li, and I.~Adzhubei.
+\newblock {No evidence that natural selection has been less effective at
+  removing deleterious mutations in Europeans than in West Africans}.
+\newblock \emph{Nature Genetics}, 47\penalty0 (2), 2015.
+\newblock ISSN 1061-4036.
+
+\bibitem[Ewens(2004)]{Ewens2004}
+W.~Ewens.
+\newblock \emph{{Mathematial population genetics. I. Theoretical introduction,
+  2nd edition}}.
+\newblock 2004.
+
+\bibitem[Eyre-walker and Keightley(2007)]{Eyre-walker2007}
+A.~Eyre-walker and P.~D. Keightley.
+\newblock {The distribution of fitness effects of new mutations}.
+\newblock \emph{Nature Reviews Genetics}, 8\penalty0 (August):\penalty0
+  610--618, 2007.
+
+\bibitem[Fu et~al.(2014)Fu, Gittelman, Bamshad, and Akey]{Fu2014}
+W.~Fu, R.~M. Gittelman, M.~J. Bamshad, and J.~M. Akey.
+\newblock {Characteristics of Neutral and Deleterious Protein-Coding Variation
+  among Individuals and Populations}.
+\newblock \emph{The American Journal of Human Genetics}, 95\penalty0
+  (4):\penalty0 421--436, 2014.
+\newblock ISSN 0002-9297.
+
+\bibitem[Gravel(2016)]{Gravel2016}
+S.~Gravel.
+\newblock {When is selection effective?}
+\newblock \emph{Genetics}, XXX\penalty0 (September):\penalty0 1--23, 2016.
+\newblock ISSN 0016-6731.
+
+\bibitem[Gravel et~al.(2013)Gravel, Zakharia, Moreno-estrada, Byrnes, Muzzio,
+  Rodriguez-flores, Kenny, Gignoux, Maples, Guiblet, Dutil, Via, Sandoval,
+  Bedoya, Oleksyk, Ruiz-linares, Burchard, Martinez-cruzado, and
+  Bustamante]{Gravel2013}
+S.~Gravel, F.~Zakharia, A.~Moreno-estrada, et~al.
+\newblock {Reconstructing Native American Migrations from Whole- Genome and
+  Whole-Exome Data}.
+\newblock \emph{PLoS genetics}, 9\penalty0 (12), 2013.
+
+\bibitem[Haller and Messer(2016)]{Haller2016}
+B.~C. Haller and P.~W. Messer.
+\newblock {SLiM 2: Flexible, Interactive Forward Genetic Simulations}.
+\newblock \emph{Molecular Biology and Evolution}, 34\penalty0
+  (November):\penalty0 230--240, 2016.
+
+\bibitem[Harris and Nielsen(2016)]{Harris2016a}
+K.~Harris and R.~Nielsen.
+\newblock {The Genetic Cost of Neanderthal Introgression}.
+\newblock \emph{Genetics}, 203\penalty0 (June):\penalty0 881--891, 2016.
+
+\bibitem[Henn et~al.(2015{\natexlab{a}})Henn, Botigu{\'{e}}, Bustamante, Clark,
+  and Gravel]{Henn2015a}
+B.~M. Henn, L.~R. Botigu{\'{e}}, C.~D. Bustamante, A.~G. Clark, and S.~Gravel.
+\newblock {Estimating the mutation load in human genomes}.
+\newblock \emph{Nature Reviews Genetics}, 16\penalty0 (June),
+  2015{\natexlab{a}}.
+\newblock ISSN 1471-0056.
+
+\bibitem[Henn et~al.(2015{\natexlab{b}})Henn, Botigu{\'{e}}, Peischl,
+  Dupanloup, Lipatov, Maples, Martin, Musharoff, Cann, Snyder, Excoffier, Kidd,
+  and Bustamante]{Henn2015b}
+B.~M. Henn, L.~R. Botigu{\'{e}}, S.~Peischl, et~al.
+\newblock {Distance from sub-Saharan Africa predicts mutational load in diverse
+  human genomes}.
+\newblock \emph{Proceedings of the National Academy of Sciences}, page
+  201510805, 2015{\natexlab{b}}.
+\newblock ISSN 0027-8424.
+
+\bibitem[Hudson(2002)]{Hudson2002}
+R.~R. Hudson.
+\newblock {Generating samples under a Wright-Fisher neutral model of genetic
+  variation.}
+\newblock \emph{Bioinformatics (Oxford, England)}, 18\penalty0 (2):\penalty0
+  337--338, 2002.
+\newblock ISSN 1367-4803.
+
+\bibitem[Jouganous et~al.(2017)Jouganous, Long, Ragsdale, and
+  Gravel]{Jouganous2017}
+J.~Jouganous, W.~Long, A.~P. Ragsdale, and S.~Gravel.
+\newblock {Inferring the Joint Demographic History of Multiple Populations:
+  Beyond the Diffusion Approximation.}
+\newblock \emph{Genetics}, XXX\penalty0 (May), 2017.
+
+\bibitem[Kim et~al.(2017)Kim, Huber, and Lohmueller]{Kim2017a}
+B.~Y. Kim, C.~D. Huber, and K.~E. Lohmueller.
+\newblock {Deleterious variation mimics signatures of genomic incompatibility
+  and adaptive introgression}.
+\newblock \emph{arXiv}, pages 1--29, 2017.
+
+\bibitem[Kimura(1955{\natexlab{a}})]{Kimura1955}
+Kimura.
+\newblock {Random genetic drift in multi-allelic locus}.
+\newblock \emph{Evolution}, 9\penalty0 (4):\penalty0 419--435,
+  1955{\natexlab{a}}.
+
+\bibitem[Kimura(1955{\natexlab{b}})]{Kimura1955a}
+M.~Kimura.
+\newblock {Solution of a process of random genetic drift with a continuous
+  model}.
+\newblock \emph{Pnas}, 2\penalty0 (2):\penalty0 144--150, 1955{\natexlab{b}}.
+
+\bibitem[Kimura et~al.(1963)Kimura, Marayama, and Crow]{Kimura1963a}
+M.~Kimura, T.~Marayama, and J.~F. Crow.
+\newblock {The mutation load in small populations}.
+\newblock \emph{Evolution}, \penalty0 (918):\penalty0 1303--1312, 1963.
+
+\bibitem[Koch and Novembre(2017)]{Koch2017a}
+E.~Koch and J.~Novembre.
+\newblock {A Temporal Perspective on the Interplay of Demography and Selection
+  on Deleterious Variation in Humans.}
+\newblock \emph{G3 (Bethesda, Md.)}, 7\penalty0 (March):\penalty0
+  g3.117.039651, 2017.
+\newblock ISSN 2160-1836.
+
+\bibitem[Lohmueller et~al.(2008)Lohmueller, Indap, Schmidt, Boyko, Hernandez,
+  Hubisz, Sninsky, White, Sunyaev, Nielsen, Clark, and
+  Bustamante]{Lohmueller2008}
+K.~E. Lohmueller, A.~R. Indap, S.~Schmidt, et~al.
+\newblock {Proportionally more deleterious genetic variation in European than
+  in African populations.}
+\newblock \emph{Nature}, 451\penalty0 (7181):\penalty0 994--997, 2008.
+\newblock ISSN 0028-0836.
+
+\bibitem[Naslavsky et~al.(2017)Naslavsky, Bozoklian, Lazar, Duarte, Yamamoto,
+  Sunaga, Pho, Ezquina, Orli, Sandberg, Bernardo, Brito, Zatz, Jr, and
+  Passos-bueno]{Naslavsky2017}
+M.~S. Naslavsky, D.~Bozoklian, M.~Lazar, et~al.
+\newblock {Exomic variants of an elderly cohort of Brazilians in the ABraOM
+  database}.
+\newblock \emph{Human Mutation}, 38\penalty0 (December 2016):\penalty0
+  751--763, 2017.
+
+\bibitem[Pollard et~al.(2010)Pollard, Hubisz, Rosenbloom, and
+  Siepel]{Pollard2010}
+K.~S. Pollard, M.~J. Hubisz, K.~R. Rosenbloom, and A.~Siepel.
+\newblock {Detection of nonneutral substitution rates on mammalian
+  phylogenies}.
+\newblock \emph{Genome Research}, 20:\penalty0 110--121, 2010.
+
+\bibitem[Sankararaman et~al.(2014)Sankararaman, Mallick, Dannemann, Prufer,
+  Kelso, Paabo, and Patterson]{Sankararaman2014}
+S.~Sankararaman, S.~Mallick, M.~Dannemann, et~al.
+\newblock {The genomic landscape of Neanderthal ancestry in present-day
+  humans}.
+\newblock \emph{Nature}, 507:\penalty0 354--357, 2014.
+
+\bibitem[Simons et~al.(2014)Simons, Turchin, Pritchard, and Sella]{Simons2014}
+Y.~B. Simons, M.~C. Turchin, J.~K. Pritchard, and G.~Sella.
+\newblock {The deleterious mutation load is insensitive to recent population
+  history.}
+\newblock \emph{Nature genetics}, 46\penalty0 (3):\penalty0 220--4, 2014.
+\newblock ISSN 1546-1718.
+
+\bibitem[Wall and Brandt(2016)]{Wall2016}
+J.~D. Wall and D.~Y.~C. Brandt.
+\newblock {Archaic admixture in human history}.
+\newblock \emph{Current Opinion in Genetics {\&} Development}, 41:\penalty0
+  93--97, 2016.
+\newblock ISSN 0959-437X.
+
+\end{thebibliography}

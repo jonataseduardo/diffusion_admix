@@ -1,0 +1,35 @@
+initialize() {
+	initializeMutationRate(1e-6);
+	initializeMutationType("m1", 0.5, "f", 0.0);
+  m1.mutationStackPolicy = "l"; 
+	//initializeMutationType("m2", 0.5, "f", 0.1);
+  //m2.mutationStackPolicy = "f"; 
+	//initializeGenomicElementType("g1", c(m1,m2), c(1.0,1.0));
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, 10000);
+	initializeRecombinationRate(0.0);
+}
+
+// Create first pop
+1 { sim.addSubpop("p1", 1000); }
+
+// Generation 1000 is the present.  Output and terminate.
+//1000 late() {
+//	p1.outputSample(50); // YRI phase 3 sample of size 108
+//}
+
+// Split first pop in two
+1000 {
+	sim.addSubpopSplit("p2", 25, p1);
+}
+
+10 {
+	sim.addSubpopSplit("p3", 25, p1);
+}
+
+// Generation 1000 is the present.  Output and terminate.
+1000 late() {
+	p1.outputSample(5); // YRI phase 3 sample of size 108
+	p2.outputSample(4); // CEU phase 3 sample of size 99
+	p3.outputSample(4); // CEU phase 3 sample of size 99
+}

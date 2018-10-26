@@ -20,12 +20,6 @@
 \newcommand{\st}{\textsuperscript{\textit{st}}}
 \newcommand{\bs}{$\blacksquare$}
 
-\newcommand{\del}[1]{\ensuremath{\frac{\partial}{\partial #1}}}
-\newcommand{\dell}[1]{\ensuremath{\frac{\partial^2}{\partial {#1}^2}}}
-\newcommand{\dev}[1]{\ensuremath{\frac{d}{d #1}}}
-
-
-
 \begin{document}
 	\begin{center}
     \Large{Genetic Load and Efficacy of Selection on Admixed Populations} 
@@ -290,6 +284,10 @@ populations, incorporating realistic demographic histories. The coalescent
 neutral simulations are computationally efficient and will provide the null
 distributions for the genetic variability since the load and efficacy of
 selection statistics are equal to zero by definition.
+% DM: É preciso falar em load e efficacy of selection sob um modelo neutro, na
+% medida em que, por definição, numa simulação neutra, não há load pois todas
+% as mutações são load por terem s=0? Há algo aqui que soa impreciso.
+% JC: Tried to adjust 
 
 For the second layer, we will use software such as \textit{moments}
 \citep{Jouganous2017} and \textit{SLiM-2} \citep{Haller2016} to simulate the
@@ -305,6 +303,7 @@ With the proposed set of simulations we will be able to test the dependency of
 load and efficacy of selection in admixed population with the proportion and
 effective sizes of source populations, and to evaluate the effect of different
 combinations of dominance and selection regimes. 
+
 
 \subsection{Efficacy of selection derivation}
 \label{sec:fit}
@@ -322,15 +321,6 @@ statistical test to measure differences in efficacy of selection based on the
 temporal variation of genetic load and allele frequencies in large populations,
 using the Kimura's diffusion equation \citep{Kimura1955,Kimura1955a}. 
 
-Let the allele frequency moments be defined by $\mu_k \equiv \int_{0}^{1}x^k
-\phi(x,t)dx$, the fitness in the diploid case can be written as 
-\begin{equation}
-  W = s[2h\mu_1 + (1 - 2h)\mu_2]
-\end{equation} 
-Then the rate of change in fitness will depend on the derivatives of the first
-and second moment which can be calculate using the diffuion equation for
-$\phi(x)$.  
-
 The diffusion equation defines the temporal evolution of the site frequency
 spectrum function $\phi(x,t)$, which gives the probability density that one
 allele is at a frequency $x$ at a time $t$ in a randomly mating population of
@@ -342,104 +332,31 @@ by \cite{Ewens2004}, is given by,
 \frac{1}{4N}\frac{\partial^2}{\partial x^2} 
 x (1 - x) \phi(x,t) \\ \nonumber
 & \quad -s\frac{\partial}{\partial x} 
-(h + (1 - 2 h)x)
+(h + ( 1 - 2 h)x)
 x (1 - x) \phi(x,t) \\ \nonumber
 & \quad + 2 N u \delta(x - \frac{1}{2N}),
 \end{align}
 where $u$ is the mutation rate, $\delta$ is Dirac's delta function, and $s$
 and $h$ are constant over time. From this equation we can calculate the
-evolution for the allele frequency moments.
-
-In the infinite allele model there is pontentially a infinity number of alleles
-ate frequency 0 and 1 so it is convinient to write 
-\[
-\mu_k \equiv \int_{0}^{1}dx x^k \phi(x,t)dx 
-= \int_{0^+}^{1^-}dx x^k \phi(x,t) + K_0 \delta_{0,k} + K_1
-\]
-where $K_0$ and $K_1$ are the number of sites at frequency 0 and 1 and 
-$\delta_{0,k}$ is the Kronecker's delta. 
-
+evolution for the moments of the expected allele frequency distribution by 
 \begin{align}
-  \dot \mu_k 
-  &= \int_{0^+}^{1^-}dx x^k \del t \phi(x,t) 
-  + \dot K_0 \delta_{0,k} + \dot K_1 
-  \nonumber \\
-  &= \del t \int_{0^+}^{1^-}dx x^k \phi(x,t) 
-  + \dot K_0 \delta_{0,k} + \dot K_1 
+	\mu_k = \langle x^k \rangle = \int_{0^+}^{1^-}x^k \phi(x,t)dx.
+	\label{eq:mu_k}
 \end{align}
-
-Writing the diffusion equation as 
-\[
-  \del t \phi (x) =  
-  \frac{1}{4N} \dell x f(x)\phi(x) - s \del x g(x)\phi(x) 
-  + 2Nu\delta(x  - \frac{1}{2N})
-\]
-
-We can write 
-
-\begin{align}
-  \dot \mu_k 
-  &= \frac{1}{4N}\int_{0^+}^{1^-}dx x^k \dell x [f(x)\phi(x,t)] & & \bigg\} I_1
-  \nonumber \\
-  \quad &- s\int_{0^+}^{1^-}dx x^k \del x [g(x)\phi(x,t)] & & \bigg\} I_2
-  \nonumber \\
-  \quad &+\frac{u}{(2N)^{k -1}} + \dot K_0 \delta_{0,k} + \dot K_1 
-  \label{eq:dmk}
-\end{align}
-
-For $k = 0$, it follows 
-\begin{align}
-  \dot \mu_0 &= \frac{1}{4N} \dev x [f(x)\phi(x)]_{0^+}^{1^-}
-  - s [g(x)\phi(x)]_{0^+}^{1^-}
-  +2Nu + \dot K_0  + \dot K_1 
-  \nonumber \\
- &= - \frac{\phi(0^+) + \phi(1^-)}{4N}
-  +2Nu + \dot K_0  + \dot K_1
-\end{align}
-
-Because the number of sites is constant $\dot \mu_0 = 0$ then we can require
-
-for $k = 0$ it follows 
-\begin{align}
-  \dot K_0 &= \frac{\phi(0^+)}{4N} - 2Nu \\
-  \dot K_1 &= \frac{\phi(1^-)}{4N}
-\end{align}
-
-For $k \geq 1$ we can solve by parts the integrals \eqref{eq:dmk} as follows
-\begin{align}
-  I_2 &= -s\{[g(x)\phi(x)x^k]_{0^+}^{1^-} - 
-  k \int_{0^+}^{1^-} dx x^{k -1} [g(x)\phi(x,t)]\}  
-  \nonumber \\
-  &= - sk \int_{0^+}^{1^-} dx x^{k -1} (h + (1 - 2 h)x) x (1 - x)\phi(x,t)  
-  \nonumber \\
-  &= sk \int_{0^+}^{1^-} dx [h(x^{k + 1} - x^{k}) + 
-  (1 - 2 h)(x^{k + 2} - x^{k + 1})]\phi(x,t)
-  \nonumber \\
-  &= sk [h(\mu_{k + 1} - \mu_{k}) + 
-  (1 - 2 h)(\mu_{k + 2} - \mu_{k + 1})]
-  \label{eq:I2}
-  \\
-  I_1 &= \frac{1}{4N}\{[\dev x (f(x)\phi(x)x^k]_{0^+}^{1^-})] - 
-      k \int_{0^+}^{1^-} dx x^{k -1} \dev x [f(x)\phi(x,t)]\}
-  \nonumber \\
-   &= \frac{1}{4N}\{[\dev x (f(x)\phi(x))x^k]_{0^+}^{1^-})] - 
-      k[f(x)\phi(x)x^{k-1}]_{0^+}^{1^-})]
-      \nonumber \\
-  \quad &+ k(k -1) \int_{0^+}^{1^-} dx x^{k - 2} f(x)\phi(x,t)\}
-  \nonumber \\
-   &= \frac{1}{4N}\{\phi(1^-) + k(k -1) \int_{0^+}^{1^-} dx (x^{k - 1} - x^k ) \phi(x,t)\}
-  \nonumber \\
-   &= \dot K_1 - \frac{k(k-1)}{4N}(\mu_k - \mu_{k-1})
-\end{align}
-
-It follows 
+Given the equations \eqref{eq:difeq} and \eqref{eq:mu_k} it is not hard to
+calculate the rate in which the moments change over time, $\dot \mu_k \equiv
+\frac{d \mu_k}{ dt}$ (see supplementary material of \cite{Gravel2016} for more
+details),
 \begin{align}
 	\label{eq:dmu_k}
 	\dot \mu_k = \frac{k(k-1)}{8N} \pi_{k-1} + \frac{sk}{4}\Gamma_{k,h} + \frac{1}{(2N)^{k-1}}u,
 \end{align}
 where $\pi_k = 2(\mu_k - \mu_{k+1})$ and $\Gamma_{k,h} = 2[h\pi_k + (1 - 2h)\pi_{k+1}]$.
 
-The expected change in genetic load can be written as three components representing
+The expected genetic load is also defined as $W = \langle L \rangle$ and can be
+expressed in terms of the first and second allele frequency moments. Using the
+equation \eqref{eq:dmu_k} the rate that the average load changes over time
+($\dot W \equiv \frac{d W}{dt}$) can be written as three components representing
 the instantaneous contributions of selection, mutation and drift: 
 \[
 	\dot W = \dot W_s + \dot W_u + \dot W_N,
@@ -460,7 +377,10 @@ differentiation  between populations over time.  Nevertheless, in the case of
 variants of additive effects, the drift component is equal to zero. More
 importantly, the selection component, $\dot W_s$, defines the efficacy of
 selection and is the main contribution to differences in load between large
-populations over  time.  It is important to emphasize that  equation
+populations over  time.
+% DM: Porque "between large"? E between large and small?
+% JC: por que a aproximação de diffusão só é boa para populaçoes com N grande 
+It is important to emphasize that  equation
 \eqref{eq:Ws} can be easily estimated from real data since it only depends on
 estimation of allele frequency moments.
 
@@ -480,199 +400,46 @@ one proposed by \cite{Jouganous2017}, numerically evaluating the time dynamic
 of the function $\phi(x,t)$ for multiple populations under complex demographic
 scenarios including admixture events.  
 
-\section{Efficacy of Selection of Admixed Population}%
-\label{sec:ef_admix} 
+\section{Project Schedule}
 
-In a single pulse admxiture model we can write the 
-\[
-  \phi(x_1, x_2, x_3) = 
-  \phi(x_1, x_2) \delta(x_3 - \alpha_1 x_1 - \alpha_2 x_2) 
-\] 
-
-In the infinite allele model there is pontentially a infinity number of alleles
-ate frequency 0 and 1 so it is convinient to write 
-\[
-\mu_{3,k} \equiv \int_{0}^{1}dx_3 x_3^k \phi(x_3,t)dx 
-= \int_{0^+}^{1^-}dx_3 x_3^k \phi(x_3,t) + K_{3,0} \delta_{0,k} + K_{3,1}
-\]
-where $K_0$ and $K_1$ are the number of sites at frequency 0 and 1 and 
-$\delta_{0,k}$ is the Kronecker's delta. 
+In oder to accomplish our objectives we will need to develop theoretical
+and simulation analyses of whole-genome sequencing data. In table
+\ref{tab:smallcalendar} we present a summary of the planned schedule. 
 
 
-then we can calculate the moments of the admix population as
-\begin{align}
-  \mu_{3,k} &= \int_0^1 \int_0^1\int_0^1dx_1 dx_2 dx_3 x_3^k \phi(x_1, x_2) 
-  \delta(x_3 - \alpha_1 x_1 - \alpha_2 x_2)
-  \nonumber \\
-  &= \int_0^1 \int_0^1dx_1 dx_2 (\alpha_1 x_1 +  \alpha_2 x_2) ^k \phi(x_1, x_2)
-  \nonumber \\
-  &= \int_0^1 \int_0^1dx_1 dx_2 \sum_{j=1}^k\binom{j}{k}
-  (\alpha_1 x_1)^j(\alpha_2x_2)^{k -j} \phi(x_1, x_2)
-  \nonumber \\
-  &= \sum_{j=1}^k\binom{j}{k} \alpha_1^j\alpha_2^{k -j} 
-  \int_0^1 \int_0^1dx_1 dx_2 x_1^jx_2^{k -j} \phi(x_1, x_2)
-  \nonumber \\
-  &= \sum_{j=1}^k\binom{j}{k} \alpha_1^j\alpha_2^{k -j} 
-  \mu_{j,k-j}^{1,2}
-\end{align}
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{|l||c|c|c|c|}
+      \hline
+      Trimester & 1\ts0 & 2\ts0 & 3\ts0 & 4\ts0 \\ 
+      \hline \hline
+      Admixture Simulations & \bs & \bs & \bs &  \\ \hline
+      Theory of load in admixed population  & &\bs  &\bs  &\bs  \\ \hline
+      Analysis of Admixed population data & & & &\bs  \\
+      \hline
+    \end{tabular}
+\caption{Project work schedule.}
+\label{tab:smallcalendar}
+\end{table}
 
-where 
-$\mu_{j,k-j}^{1,2} = 
-\int_0^1 \int_0^1dx_1 dx_2 x_1^jx_2^{k -j} \phi(x_1,x_2)$
 
-The change in time of the moments of the admix populations is
-\begin{align}
-  \dot \mu_{3,k}
-  &= \int_{0^+}^{1^-} \int_{0^+}^{1^-} \int_{0^+}^{1^-} dx_1 dx_2 dx_3 x_3^k \del t 
-  \phi(x_1, x_2, x_3,t) 
-  + \dot K_{3,0} \delta_{0,k} + \dot K_{3,1}
-  \nonumber \\
-  &= \del t \int_{0^+}^{1^-}\int_{0^+}^{1^-} \int_{0^+}^{1^-} dx_1 dx_2 dx_3 x_3^k 
-  \phi(x_1, x_2, x_3,t) 
-  + \dot K_{3,0} \delta_{0,k} + \dot K_{3,1}
-  \nonumber \\
-  &= \sum_{j=1}^k\binom{j}{k} \alpha_1^j\alpha_2^{k -j} 
-  \del t \mu_{j,k-j}^{1,2}
-\end{align}
+\section{Proposal in context of postdoctoral project}
 
-The diffusion equation for 2 populations is given by 
+Our previous goals of studying  load in admixed populations was focused on
+understanding how recent selection  resulted in an increase of the African
+ancestry component in the HLA region. We were interested in investigation if
+this effect could drive the accumulation of deleterious variants. We now
+propose to extend our study of this theme by using a much more complete
+theoretical framework and testing its predictions on a genomewide scale.    
 
-\begin{align}
-\label{eq:difeq_2p}
-\frac{\partial}{\partial t} \phi(x_1, x_2, t) & \approx 
-\frac{1}{4N_1}\frac{\partial^2}{\partial x_1^2} 
-x_1 (1 - x_1) \phi(x_1, x_2,t) 
-+ \frac{1}{4N_2}\frac{\partial^2}{\partial x_2^2} 
-x_2 (1 - x_2) \phi(x_1, x_2,t) \\ \nonumber
-& \quad -s\frac{\partial}{\partial x_1} 
-(h + (1 - 2 h)x_1)
-x_1 (1 - x_1) \phi(x_1,x_2,t) \\ \nonumber
-& \quad -s\frac{\partial}{\partial x_2} 
-(h + (1 - 2 h)x_2)
-x_2 (1 - x_2) \phi(x_1,x_2,t) \\ \nonumber
-& \quad + 2 N_1 u \delta(x_1 - \frac{1}{2N_1})
-+ 2 N_2 u \delta(x_2 - \frac{1}{2N_2})
-\end{align}
-
-Writing the diffusion equation as 
-\begin{align}
-  \del t \phi (x_1,x_2) =  
-  \frac{1}{4N_1} \dell x_1 f_1(x_1)\phi(x_1, x_2) - s \del x_1 g_1(x_1)\phi(x_1) 
-  \nonumber \\
-  \frac{1}{4N_2} \dell x_2 f_2(x)\phi(x_1, x_2) - s \del x_2 g_2(x_2)\phi(x) 
-  \nonumber \\
-  + 2N_1u\delta(x_1  - \frac{1}{2N_1})
-  + 2N_2u\delta(x_2  - \frac{1}{2N_2})
-\end{align}
-
-We can write 
-
-\begin{align}
-  \dot \mu_{kj}^{12}
-  &= \frac{1}{4N_1}\int_{0^+}^{1^-}dx_1 x_1^k \dell {x_1} [f_1(x_1)\psi_1^j(x_1,t)] 
-  & & \bigg\} I_{1,1}
-  \nonumber \\
-  \quad&+ \frac{1}{4N_2}\int_{0^+}^{1^-}dx_2 x_2^j \dell {x_2} [f_2(x_2)\psi_2^k(x_2,t)] 
-  & & \bigg\} I_{1,2}
-  \nonumber \\
-  \quad &- s\int_{0^+}^{1^-}dx_1 x_1^k \del x_1 [g_1(x_1)\psi_1^j(x_1,t)] 
-  & & \bigg\} I_{2,1}
-  \nonumber \\
-  \quad &- s\int_{0^+}^{1^-}dx_2 x_2^j \del x_2 [g_2(x_2)\psi_2^k(x_2,t)] 
-  & & \bigg\} I_{2,2}
-  \nonumber \\
-  \quad &+\frac{u}{(2N_1)^{k -1}} +\frac{u}{(2N_2)^{j -1}}
-  + \dot K_0^{12} \delta_{0,k} + \dot K_1^{12} 
-  & & \bigg\} I_{0}
-  \nonumber \\
-  \label{eq:dmk3}
-\end{align}
-
-where $\psi_1^j(x_1) = \int_{0^+}^{1^-}dx_2 x_2^j \phi(x_1,x_2)$.
-
-For $k = 0$, it follows 
-\begin{align}
-  \dot \mu_{0,0}^{1,2} &= 
-  \frac{1}{4N_1} \dev x_1 [f_1(x_1)\psi_1^0(x_1)]_{0^+}^{1^-}
-  - s [g_1(x_1)\psi_1^0(x_1)]_{0^+}^{1^-}
-  \nonumber \\
-  &\quad + \frac{1}{4N_2} \dev x_2 [f_2(x_2)\psi_1^0(x_2)]_{0^+}^{1^-}
-  - s [g_2(x_1)\psi_2^0(x_2)]_{0^+}^{1^-}
-  \nonumber \\
-  &\quad +2N_1u + 2N_2u + \dot K_{3,0}  + \dot K_{3,1}
-  \nonumber \\
- &= - \frac{1}{4N_1}[\int_{0+}^{1-} dx_2\phi(0^+, x_2) + \int_{0+}^{1-}
-   dx_2\phi(1^-,x_2)]
-   \nonumber \\
-  &\quad - \frac{1}{4N_2}[\int_{0+}^{1-} dx_1\phi(x_1, 0^+) + \int_{0+}^{1-}
-   dx_1\phi(x_1, 1^-)]
-  \nonumber \\
-  &\quad +2N_1u + 2N_2u + \dot K_{3,0}  + \dot K_{3,1}
-  \nonumber \\
-\end{align}
-
-Because the number of sites is constant $\dot \mu_0 = 0$ then we can require
-
-for $k = 0$ it follows 
-\begin{align}
-  \dot K_{3,0} &= 
-  \frac{1}{4N_1}\int_{0+}^{1-} dx_2\phi(0^+, x_2) + 
-  \frac{1}{4N_2}\int_{0+}^{1-} dx_1\phi(x_1, 0^+) - 
-  2u(N_1 + N_2) \\
-  \dot K_{3,1} &= 
-  \frac{1}{4N_1}\int_{0+}^{1-} dx_2\phi(1^-, x_2) + 
-  \frac{1}{4N_2}\int_{0+}^{1-} dx_1\phi(x_1, 1^-) 
-\end{align}
-
-For $k \geq 1$ we can solve by parts the integrals \eqref{eq:dmk3} as follows
-\begin{align}
-  I_{2,1} &= -s\{[g_1(x_1)\psi_1^j(x_1)x_1^k]_{0^+}^{1^-} - 
-  k \int_{0^+}^{1^-} dx_1 x_1^{k -1} [g_1(x_1)\psi_1^j(x_1,t)]\}  
-  \nonumber \\
-  &= - sk \int_{0^+}^{1^-} dx_1 dx_2 
-  x_1^{k -1} x_2^j (h + (1 - 2 h)x_1) x_1 (1 - x_1)\phi(x_1, x_2, t)  
-  \nonumber \\
-  &= sk \int_{0^+}^{1^-} dx_1 dx_2 [h(x_1^{k + 1} - x_1^{k}) + 
-  (1 - 2 h)(x_1^{k + 2} - x_1^{k + 1})]x_2^j\phi(x_1, x_2, t)
-  \nonumber \\
-  &= sk [h(\mu_{k + 1,j}^{12} - \mu_{k,j}^{12}) + 
-  (1 - 2 h)(\mu_{k + 2,j}^{12} - \mu_{k + 1,j}^{12})]
-  \label{eq:I21}
-  \\
-  I_{1,1} &= \frac{1}{4N_1}\{[\dev x_1 (f_1(x_1)\psi_1(x_1)x_1^k]_{0^+}^{1^-})] - 
-      k \int_{0^+}^{1^-} dx_1 x_1^{k -1} \dev x_1 [f_1(x_1)\psi_1(x_1,t)]\}
-  \nonumber \\
-   &= \frac{1}{4N_1}\{[\dev x_1 (f_1(x_1)\psi(x_1))x_1^k]_{0^+}^{1^-})] - 
-      k[f_1(x_1)\psi(x)x_1^{k-1}]_{0^+}^{1^-})]
-      \nonumber \\
-  \quad &+ k(k -1) \int_{0^+}^{1^-} dx_1 dx_2x^{k - 2} x_2^jf_1(x_1)\phi(x_1, x_2,t)\}
-  \nonumber \\
-   &= \frac{1}{4N_1}\{\int_{0^+}^{1^-} dx_2 x_2^j \phi(1^-,x_2) 
-   + k(k -1) \int_{0^+}^{1^-} dx (x^{k - 1} - x^k )x_2^j \phi(x,t)\}
-  \nonumber \\
-   &= \frac{1}{4N_1}\int_{0^+}^{1^-} dx_2 x_2^j \phi(1^-,x_2) 
-   - \frac{k(k-1)}{4N}(\mu_{k,j}^{12}- \mu_{k-1,j}^{12})
-  %\nonumber \\
-  % &= \dot K_1 - \frac{k(k-1)}{4N}(\mu_k - \mu_{k-1})
-\end{align}
-
-Finally
-\begin{align}
-  \dot \mu_{kj}^{12} &= I_{1,1} + I_{1,2} + I_{2,1} + I_{2,2} + I_0
-  \nonumber \\
-   &= \frac{1}{4N_1}\int_{0^+}^{1^-} dx_2 x_2^j \phi(1^-,x_2) 
-   + \frac{k(k-1)}{4N_1}(\mu_{k-1,j}^{12} -\mu_{k,j}^{12})
-   \nonumber \\
-   &\quad + \frac{1}{4N_2}\int_{0^+}^{1^-} dx_1 x_1^k \phi(x_1,1^-) 
-   + \frac{j(j-1)}{4N_2}(\mu_{k,j-1}^{12} - \mu_{k,j}^{12})
-   \nonumber \\
-  &\quad + sk [h(\mu_{k,j}^{12} - \mu_{k + 1,j}^{12}) + 
-  (1 - 2 h)(\mu_{k + 1,j}^{12} -\mu_{k + 2,j}^{12})]
-  \nonumber \\
-  &\quad+ sj [h(\mu_{k,j}^{12} - \mu_{k,j + 1}^{12}) + 
-  (1 - 2 h)(\mu_{k,j + 1}^{12} -\mu_{k,j + 2}^{12})]
-\end{align} 
-
+The BEPE scholarship candidate has a  PhD degree in Physics and is trained in
+Statistical Mechanics, which uses many of the same tools which have been
+applied to quantify load in non-admixed populations. He is therefore in an
+ideal situation to contribute to the development of a more general theoretical
+treatment, which also includes the dynamics of admixed populations.  Therefore,
+most of the analysis of the real and simulated data will be done using statical
+methods to be developed in collaboration with the group of Prof. John Novembre,
+who is an expert in genetic load and admixture process of human populations.  
 
 \footnotesize
 \twocolumn
@@ -680,6 +447,7 @@ Finally
 \bibliographystyle{abbrvnat85}
 \bibliography{mend}
 \end{spacing}
+
 
 \end{document}
 
