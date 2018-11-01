@@ -2,11 +2,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import moments as mm 
-import moments 
 from itertools import combinations
 import gen_load_ultis as gl
 import os, sys
-
 
 def get_fname_parameters(fname):
     fp = fname[:-3].split("_")[1:]
@@ -20,17 +18,18 @@ def get_fname_parameters(fname):
             f = float(p[1:])
     return {"gamma": g, "dominance": h, "fadmix": f}
 
-
-def stats_from_file(fname, gamma, h):
+def stats_from_fs(fs, gamma, h):
     """
     Read Simulation SFS file and eval the k first moments for of each
     population.
 
     Params: 
-        fname file name: string
-        k  the total number of moments to be evalueted
+        fs  Spectrum object
+        gamma  selection parameter
+        h Dominance
+    Return:
+        Pandas.DataFrame with multple statistics 
     """
-    fs = mm.Spectrum.from_file(fname)
 
     stats = dict()
     stats["pop_id"] = []
@@ -68,8 +67,50 @@ def stats_from_file(fname, gamma, h):
     c_order += ["mu_" + str(k +1) for k in range(5)]
     return dt_stats[c_order]
 
+def get_simul_stats(fpath, nsimuls = None):
+    """
+    Read Simulation SFS file and eval the k first moments for of each
+    population.
+
+    Params: 
+        fpath file path: string
+        k  the total number of moments to be evalueted
+    Return:
+        Pandas.DataFrame with multple statistics 
+    """
+    df_list = []
+
+    list_files =  [f for f in os.listdir(fpath) if f.endswith(".fs")]
+
+    if nsimuls is not None:
+        list_files = list_files[:nsimuls] 
+
+    for fn in list_files:
+        fs = mm.Spectrum.from_file(fpath + fn)
+        f_par = get_fname_parameters(fn)
+        np = fs.Npop
+        g = [f_par["gamma"]] * np
+        h = [f_par["dominance"]] * np
+        df = stats_from_fs(fs, g, h) 
+        df["fadmix"] = [f_par["fadmix"]] * np
+        df_list += [df]
+
+    df_stats = pd.concat(df_list, ignore_index = True)
+
+    return df_stats
+
 if __name__ == "__main__":
 
 
-    list_files = os.listdir("../data")
-    list_files
+    df_stats = get_simul_stats('../data/')
+
+    df = df_stats.dropna().sort_values(by = ["pop_id", "gamma", 
+                                             "dominance", "fadmix"])
+
+    pop_dt = dict()
+    for i in range(3):
+        pop_dt[i]  = df[df.pop_id == i]
+        pop_dt[i].index = range(pop_dt[i].shape[0]) 
+
+    pop_dt[1].iloc[0:5,1:]
+
