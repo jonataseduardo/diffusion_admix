@@ -19,7 +19,7 @@ def cross_moments(fs, k):
     counts_per_pop = numpy.indices(fs.shape)
     counts_per_pop = numpy.transpose(counts_per_pop, axes=range(1, r + 1) + [0])
     
-    ktilde = np.tile(k, np.append(ns + 1, 1))
+    ktilde = numpy.tile(k, numpy.append(ns + 1, 1))
 
     x = 1. * counts_per_pop / ns 
 
@@ -42,7 +42,7 @@ def mutation_load(fs, s, h):
         return s * (2 * h * mu_1 + (1 - 2 * h) * mu_2)
 
 def pi_k(fs, k):
-    return 2. * (onepop_moments(fs, k) - onepop_moments(fs, k-1))
+    return 2. * (onepop_moments(fs, k) - onepop_moments(fs, k + 1))
 
 def Gamma_kh(fs, k, h):
     if(isclose(h, 0.5)): 
