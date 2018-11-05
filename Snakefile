@@ -1,26 +1,29 @@
 #!/bin/python3
 
-NSAMPLE = [100]
-GAMMA = [-100, -50, -10, -5, -1, -0.5, -0.1, -0.05, -0.01]
-DOMINANCE = [0.0, 0.01, 0.05, 0.1, 0.3, 0.5]
-FADMIX = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+import numpy
+
+numpy.set_printoptions(suppress=True)
+
+NSAMPLE = [5]
+#GAMMA = [-100, -50, -10, -5, -1, -0.5, -0.1, -0.05, -0.01]
+#DOMINANCE = [0.0, 0.01, 0.05, 0.1, 0.3, 0.5]
+GAMMA = - numpy.round(numpy.logspace(-2, 2, 3), decimals = 2)
+DOMINANCE = numpy.round(numpy.linspace(0, 0.5, 3), decimals = 2)
 
 rule all:
     input:
-        expand('data/AFW_ns{nsample}_g{gamma}_d{dominance}_f{fadmix}.fs', 
+        expand('data/AfEu_ns{nsample}_g{gamma}_d{dominance}.fs', 
                nsample=NSAMPLE,
                gamma=GAMMA,
-               dominance=DOMINANCE,
-               fadmix=FADMIX)
+               dominance=DOMINANCE)
 
 rule moments_simul:
     output:
-        'data/AFW_ns{nsample}_g{gamma}_d{dominance}_f{fadmix}.fs'
+        'data/AfEu_ns{nsample}_g{gamma}_d{dominance}.fs'
     shell:
         "python2.7 -W ignore"
-        " scripts/AfrEur_admix.py" 
+        " scripts/AfrEur_split.py" 
         " -ns {wildcards.nsample}" 
         " -g {wildcards.gamma}"
         " -d {wildcards.dominance}"
-        " -f {wildcards.fadmix}"
         " -o {output}"
