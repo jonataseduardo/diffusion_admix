@@ -7,7 +7,7 @@ def onepop_moments(fs, k):
     ns = fs.sample_sizes[0]
     # sample frequencies p 
     p = numpy.arange(0, ns + 1, dtype=float) / ns
-    return (fs *(p ** k)).sum()
+    return numpy.ma.sum(fs *(p ** k))
 
 def cross_moments(fs, k):
     r = fs.Npop
@@ -31,7 +31,7 @@ def cross_moments(fs, k):
 
     mu_k = x_k * fstilde
 
-    return mu_k.sum()
+    return numpy.na.sum(mu_k)
 
 def mutation_load(fs, s, h):
     mu_1 = onepop_moments(fs, 1)
@@ -50,9 +50,12 @@ def Gamma_kh(fs, k, h):
     else:
         return 2. * (h * pi_k(fs, k) + (1. - 2. * h) * pi_k(fs, k + 1))
 
-def efficacy_of_selection(fs, s, h):
+def fit_efficacy(fs, s, h):
     if(isclose(h, 0.5)): 
         return s * s * Gamma_kh(fs, 1, h) / 4.
     else:
         w =  0.5 * h * Gamma_kh(fs, 1, h) + (1. - 2. * h) * Gamma_kh(fs, 2, h)
         return  s * s * w
+
+def morton_efficacy(fs, s, h):
+    return i * s * Gamma_kh(fs, 1, h) / 4.
