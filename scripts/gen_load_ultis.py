@@ -58,4 +58,4 @@ def fit_efficacy(fs, s, h):
         return  s * s * w
 
 def morton_efficacy(fs, s, h):
-    return i * s * Gamma_kh(fs, 1, h) / 4.
+    return s * s * Gamma_kh(fs, 1, h) / 4.
