@@ -34,8 +34,8 @@ def stats_from_fs(fs, gamma, h):
     stats = dict()
     stats["pi"] = [fs.pi()]
     stats["load"] = [gl.mutation_load(fs, gamma, h)]
-    stats["fit"] = [gl.efficacy_of_selection(fs, gamma, h)]
-    stats["morton"] = [gl.efficacy_of_selection(fs, gamma, 0.5)]
+    stats["fit"] = [gl.fit_efficacy(fs, gamma, h)]
+    stats["morton"] = [gl.morton_efficacy(fs, gamma, h)]
     stats["gamma"] = gamma
     stats["dominance"] = h
     for k in range(5):
@@ -107,29 +107,76 @@ def eval_proportion_to_Afr(df_stats):
                        axis = 1)
     return ratios
 
-if __name__ == "__main__":
+def eur_matrix_plot(ratios, col_name = "pi"):
+    ratios = ratios[ratios.gamma < - 0.5]
+    yticks = ratios.gamma.unique()
+    xticks = ratios.dominance.unique()
+    ncols = xticks.shape[0]
+    nrows = yticks.shape[0]
+    stats = ratios[ratios.pop_id == 1].loc[:, col_name]
+    mstats = stats.values.reshape(nrows, ncols)
 
+    smin =  stats.min()
+    smax = stats.max() 
+    dc = max(smax - 1, 1 - smin)
+    max_color = 1 + dc
+    min_color = 1 - dc
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    im = ax.imshow(mstats, 
+                   interpolation = 'spline16', 
+                   cmap = 'RdBu',
+                   vmin = min_color, 
+                   vmax = max_color)
+    ax.set_xticks(range(ncols))
+    ax.set_xticklabels(xticks)
+    ax.set_yticks(range(nrows))
+    ax.set_yticklabels(yticks)
+    cbar = fig.colorbar(im)
+    cbar.ax.set_ylabel(col_name)
+    fig.tight_layout()
+    fig.savefig("../figures/pdiag_" + col_name + ".png")
+    return fig
+
+def plot_admix_hueline(ratios, stats_key): 
+
+    with sns.set_context("paper"):
+        sns.set(style="white")
+
+
+        palette = dict(zip(ratios.fadmix.unique(),
+                           sns.color_palette("rocket_r", len(ratios.fadmix.unique()))))
+
+        sns_plot = sns.relplot(data = ratios[ratios.gamma < -0.2], 
+                               x = "dominance", 
+                               y = stats_key,
+                               hue = "fadmix",
+                               col = "gamma",
+                               col_wrap = 3,
+                               palette = palette, 
+                               kind = "line")
+        sns_plot.savefig('../figures/' + stats_key + '.png')
+
+if __name__ == "__main__":
 
     #fpath = "../data/"
     df_stats = admix_and_get_simul_stats('../data/')
 
     ratios = eval_proportion_to_Afr(df_stats)
 
+    
+    plot_admix_hueline(ratios, "mu_1")
+    plot_admix_hueline(ratios, "mu_2")
+    plot_admix_hueline(ratios, "pi")
+    plot_admix_hueline(ratios, "fit")
+    plot_admix_hueline(ratios, "morton")
 
-    sns.set(style="ticks")
+    eur_matrix_plot(ratios, "mu_1")
+    eur_matrix_plot(ratios, "mu_2")
+    eur_matrix_plot(ratios, "pi")
+    eur_matrix_plot(ratios, "fit")
+    eur_matrix_plot(ratios, "morton")
 
-    palette = dict(zip(ratios.fadmix.unique(),
-		       sns.color_palette("rocket_r", len(ratios.fadmix.unique()))))
-
-    sns.relplot(data = ratios[ratios.gamma > -2], 
-                x = "dominance", 
-                y = "morton",
-                hue = "fadmix",
-		col = "gamma",
-		palette = palette, 
-                kind = "line")
-    plt.show()
-
-
-
-
+    fig = eur_matrix_plot(ratios[ratios.pop_id == 1], "morton")
+    fig.show()
