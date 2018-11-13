@@ -141,22 +141,21 @@ def eur_matrix_plot(ratios, col_name = "pi"):
 
 def plot_admix_hueline(ratios, stats_key): 
 
-    with sns.set_context("paper"):
-        sns.set(style="white")
+    sns.set(style="white")
 
 
-        palette = dict(zip(ratios.fadmix.unique(),
-                           sns.color_palette("rocket_r", len(ratios.fadmix.unique()))))
+    palette = dict(zip(ratios.fadmix.unique(),
+                       sns.color_palette("rocket_r", len(ratios.fadmix.unique()))))
 
-        sns_plot = sns.relplot(data = ratios[ratios.gamma < -0.2], 
-                               x = "dominance", 
-                               y = stats_key,
-                               hue = "fadmix",
-                               col = "gamma",
-                               col_wrap = 3,
-                               palette = palette, 
-                               kind = "line")
-        sns_plot.savefig('../figures/' + stats_key + '.png')
+    sns_plot = sns.relplot(data = ratios[ratios.gamma < -0.2], 
+                           x = "dominance", 
+                           y = stats_key,
+                           hue = "fadmix",
+                           col = "gamma",
+                           col_wrap = 3,
+                           palette = palette, 
+                           kind = "line")
+    sns_plot.savefig('../figures/' + stats_key + '.png')
 
 if __name__ == "__main__":
 
@@ -164,19 +163,20 @@ if __name__ == "__main__":
     df_stats = admix_and_get_simul_stats('../data/')
 
     ratios = eval_proportion_to_Afr(df_stats)
-
     
     plot_admix_hueline(ratios, "mu_1")
     plot_admix_hueline(ratios, "mu_2")
     plot_admix_hueline(ratios, "pi")
     plot_admix_hueline(ratios, "fit")
     plot_admix_hueline(ratios, "morton")
+    plot_admix_hueline(ratios, "load")
 
     eur_matrix_plot(ratios, "mu_1")
     eur_matrix_plot(ratios, "mu_2")
     eur_matrix_plot(ratios, "pi")
     eur_matrix_plot(ratios, "fit")
     eur_matrix_plot(ratios, "morton")
+    eur_matrix_plot(ratios, "load")
 
-    fig = eur_matrix_plot(ratios[ratios.pop_id == 1], "morton")
+    fig = eur_matrix_plot(ratios[ratios.pop_id == 1], "load")
     fig.show()
