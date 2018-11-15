@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import scipy.special as sps
 import scipy.stats as sts
 
-#Parameters from Fitdadi paper
+# Parameters from Fitdadi paper
+# Kim et al, Genetics 345-361 (2017)
 Nanc = 7778.0
 Ncur = 3.352 * Nanc
 beta = 0.179
