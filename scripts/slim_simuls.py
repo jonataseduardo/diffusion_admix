@@ -1,5 +1,24 @@
 import numpy as np
 
+def neutral(mu = 1e-6, 
+            rho = 1e-6, 
+            lenght = 1000,
+            **kwargs
+            ):
+
+    init = """ 
+        initialize() {{
+            initializemutationrate({mu});
+            initializerecombinationrate({rho});
+            initializemutationtype("m1", 0.5, "f", 0.0);
+            initializegenomicelementtype("g1", m1, 1.0);
+            initializegenomicelement(g1, 0, {lenght});
+        }}
+        """
+    init = init.format(mu = mu, rho = rho, lenght = lenght)
+
+    return init
+
 def simple_gamma(mu = 1e-6, 
                  rho = 1e-6, 
                  dominance = 0.5,
@@ -43,6 +62,8 @@ def init_mutations(mutation_model = "simple_gamma",
 
     if mutation_model is "simple_gamma":
         init = simple_gamma(**kwargs)
+    elif mutation_model is "neutral":
+        init = neutral(**kwargs)
         
     if dominance_modifier is "huber_model": 
         init = init + huber_model(**kwargs)
@@ -52,5 +73,5 @@ def init_mutations(mutation_model = "simple_gamma",
 
 
 if __name__ == "__main__":
-    init = init_mutations() 
+    init = init_mutations(mutation_model = "neutral") 
     print init
