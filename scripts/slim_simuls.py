@@ -1,4 +1,3 @@
-import numpy as np
 
 def neutral(mu = 1e-7, 
             rho = 1e-8, 
@@ -44,6 +43,7 @@ def simple_gamma(mu = 1e-7,
 
 def synthetic_chr(mu = 1e-7, 
                   rho = 1e-8, 
+                  dominance = 0.5, 
                   alpha = -0.00657402, 
                   beta = 0.186,
                   length = 1000000,
@@ -53,8 +53,9 @@ def synthetic_chr(mu = 1e-7,
     init = """ 
         initialize() {{
             initializeMutationRate({mu});
-            
-            initializeMutationType("m1", 0.5, "g", {alpha}, {beta}); // deleterious
+
+            // deleterious
+            initializeMutationType("m1", {dominance}, "g", {alpha}, {beta}); 
             initializeMutationType("m2", 0.5, "f", 0.0);         // synonymous
             initializeMutationType("m3", 0.5, "f", 0.0);         // non-coding
             initializeMutationType("m4", 0.5, "e", 0.1);         // beneficial
@@ -99,11 +100,10 @@ def synthetic_chr(mu = 1e-7,
             initializeRecombinationRate({rho});
         }}
         """
-    init = init.format(mu = mu, rho = rho, alpha = alpha, beta = beta, 
-                       length = length)
+    init = init.format(mu = mu, rho = rho, dominance = dominance,
+                       alpha = alpha, beta = beta, length = length)
 
     return init
-
 
 def huber_model(h_intercept = 0.5, h_rate = 1e6, **kwargs):
 
@@ -135,7 +135,65 @@ def init_mutations(mutation_model = "simple_gamma",
 
     return init
 
+def out_of_africa(
+
+        ):
+        """
+        // Create the ancestral African population
+        1 { sim.addSubpop("p1", 7310); }
+
+        // Expand the African population to 14474
+        // This occurs 148000 years (5920) generations ago
+        52080 { p1.setSubpopulationSize(14474); }
+
+        // Split non-Africans from Africans and set up migration between them
+        // This occurs 51000 years (2040 generations) ago
+        55960 {
+                sim.addSubpopSplit("p2", 1861, p1);
+                p1.setMigrationRates(c(p2), c(15e-5));
+                p2.setMigrationRates(c(p1), c(15e-5));
+        }
+
+        // Split p2 into European and East Asian subpopulations
+        // This occurs 23000 years (920 generations) ago
+        57080 {
+                sim.addSubpopSplit("p3", 554, p2);
+                p2.setSubpopulationSize(1032);  // reduce European size
+
+                // Set migration rates for the rest of the simulation
+                p1.setMigrationRates(c(p2, p3), c(2.5e-5, 0.78e-5));
+                p2.setMigrationRates(c(p1, p3), c(2.5e-5, 3.11e-5));
+                p3.setMigrationRates(c(p1, p2), c(0.78e-5, 3.11e-5));
+        }
+
+        // Set up exponential growth in Europe and East Asia
+        // Where N(0) is the base subpopulation size and t = gen - 57080:
+        //    N(Europe) should be int(round(N(0) * e^(0.0038*t)))
+        //    N(East Asia) should be int(round(N(0) * e^(0.0048*t)))
+        57080:58000 {
+                t = sim.generation - 57080;
+                p2_size = round(1032 * exp(0.0038 * t));
+                p3_size = round(554 * exp(0.0048 * t));
+                
+                p2.setSubpopulationSize(asInteger(p2_size));
+                p3.setSubpopulationSize(asInteger(p3_size));
+        }
+
+        // Generation 58000 is the present.  Output and terminate.
+        //58000 late() {
+        //	p1.outputSample(216); // YRI phase 3 sample of size 108
+        //	p2.outputSample(198); // CEU phase 3 sample of size 99
+        //	p3.outputSample(206); // CHB phase 3 sample of size 103
+        //}
+
+        // Generation 58000 is the present.  Output and terminate.
+        58000 late() {
+                p1.outputSample(6); // YRI phase 3 sample of size 108
+                p2.outputSample(8); // CEU phase 3 sample of size 99
+                p3.outputSample(6); // CHB phase 3 sample of size 103
+        }
+        """
 
 if __name__ == "__main__":
-    init = init_mutations(mutation_model = "synthetic_chr", dominance_modifier = "huber_model")
+    init = init_mutations(mutation_model = "synthetic_chr", dominance = 0.3)
     print init
