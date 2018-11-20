@@ -105,7 +105,6 @@ def synthetic_chr(mu = 1e-7,
                         length = length)
      return init
 
-
 def init_mutations(mutation_model = "simple_gamma", 
                    dominance_modifier = None,
                    **kwargs
@@ -192,14 +191,19 @@ def balick_split_model(N0 = 1000, N1 = 100, Tburn = 100,
                              T2 = Tburn + Tbn, 
                              T3 = Tburn + Tbn + Tpost_bn)
 
- run_slim(slim_cmd, data_path = None):
+def run_slim(slim_cmd, data_path = None):
     out = None
     with tempfile.NamedTemporaryFile() as file:
         file.write(slim_cmd)
         file.delete = False
     try: 
-        process =  Popen(["slim", file.name], 
-                         stdout = PIPE, stderr = PIPE, stdin = PIPE)
+        if data_path is None:
+            process =  Popen(["slim", file.name], 
+                             stdout = PIPE, stderr = PIPE)
+        else:
+            cmd = "slim " + file.name + " > " + data_path
+            process =  Popen(cmd, 
+                             stdout = PIPE, stderr = PIPE, shell = True)
         out = process.communicate()
     finally:
         os.remove(file.name)
@@ -208,18 +212,18 @@ def balick_split_model(N0 = 1000, N1 = 100, Tburn = 100,
 
 if __name__ == "__main__":
 
-    @click.command()
-    @click.option("--mutation-model", "-m", 
-                  required=True, 
-                  type=click.Choice(["neutral", "simple_gamma" 
-
-
-    
-    init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 10000, dominance = 0.3)
+    init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 100)
     demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
     print init + demography
 
     x = run_slim(init + demography)
+    x = run_slim(init + demography, data_path = "teste.txt")
     print x[0]
-    x.communicate()
 
+    @click.command()
+    @click.option("--mutation-model", "-m", 
+                  required=True, 
+                  type=click.Choice(["neutral", "simple_gamma", "synthetic_chr"])
+                  )
+    def fuck(mutation_model):
+        click.echo(mutation_model)
