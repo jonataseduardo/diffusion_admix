@@ -1,5 +1,7 @@
 from subprocess import Popen, PIPE
 import tempfile, os
+import argparse
+import click
 
 def neutral(mu = 1e-7, 
             rho = 1e-8, 
@@ -43,18 +45,66 @@ def simple_gamma(mu = 1e-7,
 
     return init
 
-def huber_model(h_intercept = 0.5, h_rate = 1e6, **kwargs):
-
-    hs_modifier = """
-        fitness(m1) {{
-          if (homozygous)
-            return 1.0 + mut.selectionCoeff;
-          else
-            return 1.0 + mut.selectionCoeff /
-                   ( {intercept} + {h_rate} * mut.selectionCoeff);
+def synthetic_chr(mu = 1e-7, 
+                  rho = 1e-8, 
+                  alpha = -0.00657402, 
+                  beta = 0.186,
+                  length = 1000000,
+                  **kwargs
+                  ):
+     init = """ 
+        initialize() {{
+            initializeMutationRate({mu});
+            
+            initializeMutationType("m1", 0.5, "g", {alpha}, {beta}); // deleterious
+            initializeMutationType("m2", 0.5, "f", 0.0);         // synonymous
+            initializeMutationType("m3", 0.5, "f", 0.0);         // non-coding
+            initializeMutationType("m4", 0.5, "e", 0.1);         // beneficial
+            
+            initializeGenomicElementType("g1", c(m2,m1,m4), c(2,8,0.1)); // exon
+            initializeGenomicElementType("g2", c(m3,m1), c(9,1));      // intron
+            initializeGenomicElementType("g3", c(m3), 1);          // non-coding
+            
+            // Generate random genes along an approx {length}-base chr
+            base = 0;
+            
+            while (base < {length}) {{
+                // make a non-coding region
+                nc_length = asInteger(runif(1, 100, 5000));
+                initializeGenomicElement(g3, base, base + nc_length - 1);
+                base = base + nc_length;
+                
+                // make first exon
+                ex_length = asInteger(rlnorm(1, log(50), log(2))) + 1;
+                initializeGenomicElement(g1, base, base + ex_length - 1);
+                base = base + ex_length;
+                
+                // make additional intron-exon pairs
+                do
+                {{
+                    in_length = asInteger(rlnorm(1, log(100), log(1.5))) + 10;
+                    initializeGenomicElement(g2, base, base + in_length - 1);
+                    base = base + in_length;
+                    
+                    ex_length = asInteger(rlnorm(1, log(50), log(2))) + 1;
+                    initializeGenomicElement(g1, base, base + ex_length - 1);
+                    base = base + ex_length;
+                }}
+                while (runif(1) < 0.8);  // 20% probability of stopping
+            }}
+            
+            // final non-coding region
+            nc_length = asInteger(runif(1, 100, 5000));
+            initializeGenomicElement(g3, base, base + nc_length - 1);
+            
+            // single recombination rate
+            initializeRecombinationRate({rho});
         }}
         """
-    return hs_modifier.format(intercept = 1. / h_intercept, h_rate = h_rate)
+     init = init.format(mu = mu, rho = rho, alpha = alpha, beta = beta, 
+                        length = length)
+     return init
+
 
 def init_mutations(mutation_model = "simple_gamma", 
                    dominance_modifier = None,
@@ -125,7 +175,8 @@ def out_of_africa(n1 = 216, n2 = 198, n3 = 206, **kwargs):
     return demographics.format(n1 = n1, n2 = n2, n3 = n3)
 
 def balick_split_model(N0 = 1000, N1 = 100, Tburn = 100, 
-                       Tbn = 100, Tpost_bn = 100): 
+                       Tbn = 100, Tpost_bn = 100, 
+                       **kwargs): 
 
     demography = """
         1 {{ sim.addSubpop("p1", {N0}); }}
@@ -141,7 +192,7 @@ def balick_split_model(N0 = 1000, N1 = 100, Tburn = 100,
                              T2 = Tburn + Tbn, 
                              T3 = Tburn + Tbn + Tpost_bn)
 
-def run_slim(slim_cmd, data_path = None):
+ run_slim(slim_cmd, data_path = None):
     out = None
     with tempfile.NamedTemporaryFile() as file:
         file.write(slim_cmd)
@@ -156,11 +207,19 @@ def run_slim(slim_cmd, data_path = None):
     return out
 
 if __name__ == "__main__":
-    init = init_mutations(mutation_model = "neutral", length = 1000, dominance = 0.3)
-    demography = balick_split_model()
-    print init + demography
 
+    @click.command()
+    @click.option("--mutation-model", "-m", 
+                  required=True, 
+                  type=click.Choice(["neutral", "simple_gamma" 
+
+
+    
+    init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 10000, dominance = 0.3)
+    demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
+    print init + demography
 
     x = run_slim(init + demography)
     print x[0]
     x.communicate()
+
