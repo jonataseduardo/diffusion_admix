@@ -105,23 +105,6 @@ def synthetic_chr(mu = 1e-7,
                         length = length)
      return init
 
-def init_mutations(mutation_model = "simple_gamma", 
-                   dominance_modifier = None,
-                   **kwargs
-                   ):
-
-    if mutation_model is "simple_gamma":
-        init = simple_gamma(**kwargs)
-    elif mutation_model is "neutral":
-        init = neutral(**kwargs)
-    elif mutation_model is "synthetic_chr":
-        init = synthetic_chr(**kwargs)
-        
-    if dominance_modifier is "huber_model": 
-        init = init + huber_model(**kwargs)
-
-    return init
-
 def out_of_africa(n1 = 216, n2 = 198, n3 = 206, **kwargs):
     demographics = """
         // Create the ancestral African population
@@ -210,20 +193,75 @@ def run_slim(slim_cmd, data_path = None):
 
     return out
 
+@click.command()
+@click.option("-mm", "--mutation-model", 
+              help = "Mutation Model",
+              default="neutral", 
+              show_default=True,
+              required=True, 
+              type=click.Choice(["neutral", "simple_gamma", "synthetic_chr"])
+              )
+@click.option("-mu", "--mutation-rate", 
+              help = "Mutation rate per pair base",
+              default=1e-7, 
+              show_default=True,
+              required=True, 
+              type=float
+              )
+@click.option("-rho", "--recombination-rate", 
+              help = "Recombination rate per pair base",
+              default=1e-8, 
+              show_default=True,
+              required=True, 
+              type=float
+              )
+@click.option("-dm", "--dominance-model", 
+              help = "Dominance model",
+              default="constant", 
+              show_default=True,
+              required=False, 
+              type=click.Choice(["constant", "huber_model", "logistic"])
+              )
+def init_mutations(mutation_model,
+                   dominance_model,
+                   mutation_rate, 
+                   recombination_rate,
+                   **kwargs
+                   ):
+
+    click.echo(mutation_model)
+    click.echo(dominance_model)
+    if mutation_model is "simple_gamma":
+        init = simple_gamma(mu = mutation_rate, 
+                            rho = recombination_rate, 
+                            **kwargs)
+    elif mutation_model is "neutral":
+        init = neutral(**kwargs)
+    elif mutation_model is "synthetic_chr":
+        init = synthetic_chr(**kwargs)
+        
+    if dominance_model is "huber_model": 
+        init = init + huber_model(**kwargs)
+
+    click.echo(init)
+    demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
+    run_slim(init + demography, data_path = "teste.txt")
+
+    return init
+
+
+
+
+
 if __name__ == "__main__":
 
-    init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 100)
-    demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
-    print init + demography
+    #init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 100)
+    #demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
+    #print init + demography
 
-    x = run_slim(init + demography)
-    x = run_slim(init + demography, data_path = "teste.txt")
-    print x[0]
+    #x = run_slim(init + demography)
+    #x = run_slim(init + demography, data_path = "teste.txt")
+    #print x[0]
+    init =  init_mutations()
+    click.echo(init)
 
-    @click.command()
-    @click.option("--mutation-model", "-m", 
-                  required=True, 
-                  type=click.Choice(["neutral", "simple_gamma", "synthetic_chr"])
-                  )
-    def fuck(mutation_model):
-        click.echo(mutation_model)
