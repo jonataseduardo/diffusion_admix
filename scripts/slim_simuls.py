@@ -1,6 +1,5 @@
 from subprocess import Popen, PIPE
 import tempfile, os
-import argparse
 import click
 
 def neutral(mu = 1e-7, 
@@ -55,8 +54,9 @@ def synthetic_chr(mu = 1e-7,
      init = """ 
         initialize() {{
             initializeMutationRate({mu});
-            
-            initializeMutationType("m1", 0.5, "g", {alpha}, {beta}); // deleterious
+
+            // deleterious
+            initializeMutationType("m1", 0.5, "g", {alpha}, {beta}); 
             initializeMutationType("m2", 0.5, "f", 0.0);         // synonymous
             initializeMutationType("m3", 0.5, "f", 0.0);         // non-coding
             initializeMutationType("m4", 0.5, "e", 0.1);         // beneficial
@@ -104,6 +104,19 @@ def synthetic_chr(mu = 1e-7,
      init = init.format(mu = mu, rho = rho, alpha = alpha, beta = beta, 
                         length = length)
      return init
+
+def huber_model(h_intercept = 0.5, h_rate = 1e6, **kwargs):
+
+    hs_modifier = """
+        fitness(m1) {{
+          if (homozygous)
+            return 1.0 + mut.selectionCoeff;
+          else
+            return 1.0 + mut.selectionCoeff /
+                   ( {intercept} + {h_rate} * mut.selectionCoeff);
+        }}
+        """
+    return hs_modifier.format(intercept = 1. / h_intercept, h_rate = h_rate)
 
 def out_of_africa(n1 = 216, n2 = 198, n3 = 206, **kwargs):
     demographics = """
@@ -156,17 +169,28 @@ def out_of_africa(n1 = 216, n2 = 198, n3 = 206, **kwargs):
         """
     return demographics.format(n1 = n1, n2 = n2, n3 = n3)
 
-def balick_split_model(N0 = 1000, N1 = 100, Tburn = 100, 
-                       Tbn = 100, Tpost_bn = 100, 
+def balick_split_model(N0 = 1000, N1 = 100, 
+                       Tburn = 100, Tbn = 100, Tpost_bn = 100, 
                        **kwargs): 
 
     demography = """
         1 {{ sim.addSubpop("p1", {N0}); }}
         {T1}{{sim.addSubpopSplit("p2", {N1}, p1); }}
         {T2}{{p2.setSubpopulationSize({N0}); }}
-        {T3}{{
+        {T3}{{sim.addSubpop("p3", {N0});
+               p3.setMigrationRates(c(p1,p2), c(0.25, 0.75));
+               sim.addSubpop("p4", {N0});
+               p4.setMigrationRates(c(p1,p2), c(0.5, 0.5));
+               sim.addSubpop("p5", {N0});
+               p5.setMigrationRates(c(p1,p2), c(0.75, 0.25));
+              }}
+
+        {T3} late() {{
             p1.outputSample({N0}); 
             p2.outputSample({N0}); 
+            p3.outputSample({N0}); 
+            p4.outputSample({N0}); 
+            p5.outputSample({N0}); 
             }}
         """
     return demography.format(N0 = N0, N1 = N1, 
@@ -174,17 +198,28 @@ def balick_split_model(N0 = 1000, N1 = 100, Tburn = 100,
                              T2 = Tburn + Tbn, 
                              T3 = Tburn + Tbn + Tpost_bn)
 
-def run_slim(slim_cmd, data_path = None):
+def single_pop(N0 = 1000, Tburn = 100):
+
+    demography = """
+        1 {{ sim.addSubpop("p1", {N0}); }}
+
+        {T1} late() {{
+            p1.outputSample({N0}); 
+            }}
+        """
+    return demography.format(N0 = N0, T1 = Tburn)
+
+def run_slim(slim_cmd, output = None):
     out = None
     with tempfile.NamedTemporaryFile() as file:
         file.write(slim_cmd)
         file.delete = False
     try: 
-        if data_path is None:
+        if output is None:
             process =  Popen(["slim", file.name], 
                              stdout = PIPE, stderr = PIPE)
         else:
-            cmd = "slim " + file.name + " > " + data_path
+            cmd = "slim " + file.name + " > " + output
             process =  Popen(cmd, 
                              stdout = PIPE, stderr = PIPE, shell = True)
         out = process.communicate()
@@ -201,20 +236,47 @@ def run_slim(slim_cmd, data_path = None):
               required=True, 
               type=click.Choice(["neutral", "simple_gamma", "synthetic_chr"])
               )
+
 @click.option("-mu", "--mutation-rate", 
               help = "Mutation rate per pair base",
               default=1e-7, 
-              show_default=True,
+             show_default=True,
               required=True, 
               type=float
               )
+
 @click.option("-rho", "--recombination-rate", 
-              help = "Recombination rate per pair base",
+              help = "recombination rate per pair base",
               default=1e-8, 
               show_default=True,
               required=True, 
               type=float
               )
+
+@click.option("-l", "--length", 
+              help = "number of pair bases to be simulated",
+              default=int(1e4), 
+              show_default=True,
+              required=True, 
+              type=int
+              )
+
+@click.option("-a", "--alpha", 
+              help = "rate of the gamma distribution",
+              default=-0.00657402, 
+              show_default=True,
+              required=True, 
+              type=float
+              )
+
+@click.option("-b", "--beta", 
+              help = "shape of the gamma distribution",
+              default=0.186, 
+              show_default=True,
+              required=True, 
+              type=float
+              )
+
 @click.option("-dm", "--dominance-model", 
               help = "Dominance model",
               default="constant", 
@@ -222,35 +284,128 @@ def run_slim(slim_cmd, data_path = None):
               required=False, 
               type=click.Choice(["constant", "huber_model", "logistic"])
               )
-def init_mutations(mutation_model,
-                   dominance_model,
-                   mutation_rate, 
-                   recombination_rate,
-                   **kwargs
-                   ):
 
-    click.echo(mutation_model)
-    click.echo(dominance_model)
-    if mutation_model is "simple_gamma":
+@click.option("-d", "--dominance-value", 
+              help = "Dominance value considering constant dominance model",
+              default= 0.5, 
+              show_default=True,
+              required=False, 
+              type=float
+              )
+
+@click.option("-g", "--demographic-model", 
+              help = "Demographic Models",
+              default="single_pop", 
+              show_default=True,
+              required=False, 
+              type=click.Choice(["single_pop", "balick2017", "gravel2013"])
+              )
+@click.option("-N0", "--pop0-size", 
+              help = "Ancestral pop size for single_pop or balick2017 models",
+              default=int(1e3), 
+              show_default=True,
+              required=True, 
+              type=int
+              )
+@click.option("-N1", "--pop1-size", 
+              help = "bottleneck pop size balick2017 model",
+              default=int(1e2), 
+              show_default=True,
+              required=True, 
+              type=int
+              )
+@click.option("-t0", "--time-burn", 
+              help = "burn time for single_pop or balick2017 models",
+              default=int(1e3), 
+              show_default=True,
+              required=True, 
+              type=int
+              )
+@click.option("-tb", "--time-bottleneck", 
+              help = "bottleneck time in the balick2017 model",
+              default=int(1e3), 
+              show_default=True,
+              required=True, 
+              type=int
+              )
+@click.option("-tp", "--time-postbottleneck", 
+              help = "post bottleneck time the balick2017 model", 
+              default=int(1e3), 
+              show_default=True,
+              required=True, 
+              type=int
+              )
+@click.option("-o", "--output", 
+              help = "output file name", 
+              default= "output.txt",
+              show_default=True,
+              type=str
+              )
+def main(mutation_model,
+         dominance_model,
+         mutation_rate, 
+         recombination_rate,
+         length,
+         dominance_value,
+         alpha,
+         beta,
+         demographic_model,
+         pop0_size,
+         pop1_size,
+         time_burn,
+         time_bottleneck,
+         time_postbottleneck,
+         output,
+         **kwargs
+         ):
+
+    if mutation_model == "simple_gamma":
         init = simple_gamma(mu = mutation_rate, 
                             rho = recombination_rate, 
+                            length = length, 
+                            dominance = dominance_value, 
+                            alpha = alpha, 
+                            beta = beta,
                             **kwargs)
-    elif mutation_model is "neutral":
-        init = neutral(**kwargs)
-    elif mutation_model is "synthetic_chr":
-        init = synthetic_chr(**kwargs)
-        
-    if dominance_model is "huber_model": 
+
+    elif mutation_model == "neutral":
+        init = neutral(mu = mutation_rate, 
+                       rho = recombination_rate, 
+                       length = length, 
+                       **kwargs)
+
+    elif mutation_model == "synthetic_chr":
+        init = synthetic_chr(mu = mutation_rate, 
+                             rho = recombination_rate, 
+                             length = length, 
+                             dominance = dominance_value,
+                             alpha = alpha, 
+                             beta = beta,
+                             **kwargs)
+
+    if dominance_model == "huber_model": 
         init = init + huber_model(**kwargs)
 
-    click.echo(init)
-    demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
-    run_slim(init + demography, data_path = "teste.txt")
-
-    return init
-
-
-
+    if demographic_model == "gravel2013":
+        demography = out_of_africa()
+    elif demographic_model == "single_pop":
+        demography = single_pop(N0 = pop0_size,
+                                Tburn = time_burn)
+    elif demographic_model == "balick2017":
+        demography = balick_split_model(N0 = pop0_size,
+                                        N1 = pop1_size, 
+                                        Tburn = time_burn,
+                                        Tbn = time_bottleneck,
+                                        Tpost_bn = time_postbottleneck
+                                        )
+                                        
+    simul_code = init + demography
+    #click.echo(simul_code)
+                                 
+    slim_error = run_slim(simul_code, output = output)[1]
+    if slim_error != '':
+        click.echo(slim_error)
+    pass
 
 
 if __name__ == "__main__":
@@ -258,10 +413,6 @@ if __name__ == "__main__":
     #init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 100)
     #demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
     #print init + demography
+    main()
 
-    #x = run_slim(init + demography)
-    #x = run_slim(init + demography, data_path = "teste.txt")
-    #print x[0]
-    init =  init_mutations()
-    click.echo(init)
 
