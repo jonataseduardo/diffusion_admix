@@ -206,12 +206,13 @@ def afr_eur_admix():
                 p2.setSubpopulationSize(asInteger(p2_size));
         }}
 
-        {58001}{{sim.addSubpop("p3", {n});
-              p3.setMigrationRates(c(p1,p2), c(0.25, 0.75));
-              sim.addSubpop("p4", {n});
-              p4.setMigrationRates(c(p1,p2), c(0.5, 0.5));
-              sim.addSubpop("p5", {n});
-              p5.setMigrationRates(c(p1,p2), c(0.75, 0.25));
+        {58001}{{
+                sim.addSubpop("p3", {n});
+                p3.setMigrationRates(c(p1,p2), c(0.25, 0.75));
+                sim.addSubpop("p4", {n});
+                p4.setMigrationRates(c(p1,p2), c(0.5, 0.5));
+                sim.addSubpop("p5", {n});
+                p5.setMigrationRates(c(p1,p2), c(0.75, 0.25));
               }}
 
         // Generation 58001 is the present. Output and terminate.
@@ -449,7 +450,7 @@ def main(mutation_model,
     if demographic_model == "gravel2013":
         demography = out_of_africa()
     elif demographic_model == "jouganous2017":
-        demography = out_of_africa()
+        demography = afr_eur_admix()
     elif demographic_model == "single_pop":
         demography = single_pop(N0 = pop0_size,
                                 Tburn = time_burn)
