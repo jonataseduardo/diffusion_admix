@@ -169,7 +169,7 @@ def out_of_africa(n1 = 216, n2 = 198, n3 = 206, **kwargs):
         """
     return demographics.format(n1 = n1, n2 = n2, n3 = n3)
 
-def afr_eur_admix():
+def afr_eur_admix(n = 1000, **kwargs):
     demographics = """
         // Create the ancestral African population
         1 {{ sim.addSubpop("p1", 11273); }}
@@ -189,7 +189,6 @@ def afr_eur_admix():
         // European subpopulation second bottleneck 
         // This occurs 42.3 kyears (1459 generations) ago
         56541 {{
-                sim.addSubpopSplit("p3", 554, p2);
                 p2.setSubpopulationSize(2271);  // reduce European size
 
                 // Set migration rates for the rest of the simulation
@@ -206,7 +205,7 @@ def afr_eur_admix():
                 p2.setSubpopulationSize(asInteger(p2_size));
         }}
 
-        {58001}{{
+        58001{{
                 sim.addSubpop("p3", {n});
                 p3.setMigrationRates(c(p1,p2), c(0.25, 0.75));
                 sim.addSubpop("p4", {n});
@@ -224,7 +223,7 @@ def afr_eur_admix():
                 p5.outputSample({n}); 
         }}
         """
-    return demographics.format(n = 1000)
+    return demographics.format(n = n)
 
 def balick_split_model(N0 = 1000, N1 = 100, 
                        Tburn = 100, Tbn = 100, Tpost_bn = 100, 
@@ -268,9 +267,8 @@ def single_pop(N0 = 1000, Tburn = 100):
 
 def run_slim(slim_cmd, output = None):
     out = None
-    with tempfile.NamedTemporaryFile() as file:
-        file.write(slim_cmd)
-        file.delete = False
+    with tempfile.NamedTemporaryFile(delete = False) as file:
+        file.write(slim_cmd.encode())
     try: 
         if output is None:
             process =  Popen(["slim", file.name], 
@@ -473,8 +471,4 @@ def main(mutation_model,
 
 if __name__ == "__main__":
 
-    #init = init_mutations(mutation_model = "neutral", mu = 1e-3, length = 100)
-    #demography = balick_split_model(N0 = 100, N1 = 10, Tburn = 1000, mu = 2)
-    #print init + demography
     main()
-
