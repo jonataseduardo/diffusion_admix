@@ -96,7 +96,7 @@ def make_slim_sfs(mutations_df):
                                    values = 'allele_count', 
                                    aggfunc = max ).fillna(0)
 
-    cols = ['p' + str(i + 1) for i in range(aux.shape[1])]
+    cols = list(aux.columns)
 
     sfs_vals = aux.groupby(cols).agg('size')
     sfs_vals.name = 'num_counts'
