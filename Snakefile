@@ -26,7 +26,7 @@ afr_eur_admix = expand('data/AfEuAdmx_l-{lenght}_rid-{rid}.txt',
 
 afr_eur_admix = expand('data/AfEuAdmx_d-{dominance}_l-{lenght}_rid-{rid}.txt',
                         lenght = LENGHT, 
-                        dominance = [0.0, 0.05, 0.2]
+                        dominance = [0.0, 0.05, 0.2],
                         rid = range(100))
 
 rule all:
