@@ -48,7 +48,6 @@ def eval_stats_from_slim(mutation_db, inplace = True):
     return m_dt
 
 
-
 path = '../data/'
 list_files = os.listdir(path)
 
