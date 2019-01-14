@@ -4,15 +4,16 @@ import matplotlib.pyplot as plt
 import os
 import moments 
 import admix_and_analyse as aaa
+import seaborn as sea
 
 
 def mutation_load(m_dt):
     h = m_dt["dominance"]
     s = m_dt["selection"]
-    return s * (2. * h * m_dt["mu_i1"] + (1. - 2. * h) * m_dt["mu_i2"])
+    return s * (2. * h * m_dt["mu_1"] + (1. - 2. * h) * m_dt["mu_2"])
 
 def pi_k(m_dt, k):
-    return 2. * (m_dt["mu_i" + str(k)] - m_dt["mu_i" + str(k + 1)])
+    return 2. * (m_dt["mu_" + str(k)] - m_dt["mu_" + str(k + 1)])
 
 def Gamma_kh(m_dt, k):
     h = m_dt["dominance"]
@@ -39,11 +40,11 @@ def eval_stats_from_slim(mutation_db, inplace = True):
 
     m_dt["allele_frequency"] = m_dt.allele_count / m_dt.sample_size
     for k in range(1,6): 
-        m_dt["mu_i" + str(k)] = eval_moment(m_dt, k)
+        m_dt["mu_" + str(k)] = eval_moment(m_dt, k)
 
-    m_dt["fit_i"] = fit_efficacy(m_dt) 
-    m_dt["morton_i"] = morton_efficacy(m_dt)
-    m_dt["load_i"] = mutation_load(m_dt)
+    m_dt["fit"] = fit_efficacy(m_dt) 
+    m_dt["morton"] = morton_efficacy(m_dt)
+    m_dt["load"] = mutation_load(m_dt)
 
     return m_dt
 
@@ -66,17 +67,18 @@ def get_simul_summaries(f):
                                     intervalindex,
                                     labels = False)
 
-    run_summary = m_dt.groupby(["focal_pop_id", "selection_bins"]
-                                ).agg({"selection": ["count", "mean"], 
-                                    "load_i": ["sum", "mean"],
-                                    "fit_i": ["sum", "mean"],
-                                    "morton_i": ["sum", "mean"],
-                                    "mu_i1": ["sum", "mean"],
-                                    "mu_i2": ["sum", "mean"],
-                                    "mu_i3": ["mean", "sum"],
+    run_s = m_dt.groupby(["focal_pop_id", "selection_bins"]
+                          ).agg({"selection": ["count", "mean"], 
+                              "load": ["sum", "mean"],
+                              "fit": ["sum", "mean"],
+                              "morton": ["sum", "mean"],
+                              "mu_1": ["sum", "mean"],
+                              "mu_2": ["sum", "mean"],
+                              "mu_3": ["mean", "sum"],
                                     })
 
-    return run_summary
+    run_s.columns = ['_'.join(col) for col in run_s.columns]
+    return run_s
 
 if __name__ == "__main__":
 
@@ -88,12 +90,12 @@ if __name__ == "__main__":
 
     fns = [f for f in list_files if 'huber_l-1000000_' in f]
 
-    %time summaries = [ get_simul_summaries(f) for f in fns]
+    summaries = pd.concat([get_simul_summaries(f) for f in fns], 
+                          keys = range(len(fns)))
 
-    summaries[1].load_i
-    s = pd.concat(summaries, keys = range(len(fns)))
-    s
-    s.columns
-    s.load_i
+    summaries.head()
+    summaries.groupby("focal_pop_id").load_mean.mean()
+    summaries.groupby("focal_pop_id").mu_1_sum.mean()
+
 
 
