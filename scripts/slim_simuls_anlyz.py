@@ -47,40 +47,53 @@ def eval_stats_from_slim(mutation_db, inplace = True):
 
     return m_dt
 
+def huber_dominance(m_dt, h_intercept = 0.5, h_rate = 1e6):
+    s = m_dt["selection"] 
+    s0 = 1. / h_intercept
+    return s / (s0 + h_rate * s)
 
-path = '../data/'
-list_files = os.listdir(path)
+def get_simul_summaries(f):
 
-N0 = 11000
+    m_dt = sop.slim_output_parser(path + f)[0]
 
-fns = [f for f in list_files if 'huber_l-1000000_' in f]
+    if  "huber" in f:
+        m_dt.dominance = huber_dominance(m_dt)
 
-f = fns[35]
+    eval_stats_from_slim(m_dt, inplace = True)
 
-m_dt = sop.slim_output_parser(path + f)[0]
-m_dt = eval_stats_from_slim(m_dt, inplace = True)
+    intervalindex = [-1.0, -0.1, -0.01, -0.001, -0.0001, 0.0]
+    m_dt["selection_bins"] = pd.cut(m_dt.selection, 
+                                    intervalindex,
+                                    labels = False)
 
-m_dt["selection_bins"] = pd.cut(m_dt.selection, 4, labels = False)
+    run_summary = m_dt.groupby(["focal_pop_id", "selection_bins"]
+                                ).agg({"selection": ["count", "mean"], 
+                                    "load_i": ["sum", "mean"],
+                                    "fit_i": ["sum", "mean"],
+                                    "morton_i": ["sum", "mean"],
+                                    "mu_i1": ["sum", "mean"],
+                                    "mu_i2": ["sum", "mean"],
+                                    "mu_i3": ["mean", "sum"],
+                                    })
 
-m_dt.iloc[1:40,[2,3,4,5,6,8,9, -2, -1]]
+    return run_summary
 
-m_dt.groupby(["focal_pop_id", "selection_bins"]).selection.mean()
-m_dt.groupby(["focal_pop_id", "selection_bins"]
-            ).agg({"selection": "mean", 
-                   "load_i": "mean",
-                   "fit_i": "mean",
-                   "morton_i": "mean",
-                   "mu_i1": "mean",
-                   "mu_i2": "mean",
-                   "mu_i3": "mean"
-                   })
+if __name__ == "__main__":
 
-ss = sop.make_slim_sfs(m_dt_cut)[0]
-ms = moments.Spectrum(ss)
-mss = ms.project([200])
 
-aaa.stats_from_fs(mss, 1., 0.5)
+    path = '../data/'
+    list_files = os.listdir(path)
 
-s = mss.marginalize([1])
+    N0 = 11000
 
-s.pi()
+    fns = [f for f in list_files if 'huber_l-1000000_' in f]
+
+    %time summaries = [ get_simul_summaries(f) for f in fns]
+
+    summaries[1].load_i
+    s = pd.concat(summaries, keys = range(len(fns)))
+    s
+    s.columns
+    s.load_i
+
+
