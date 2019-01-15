@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import moments 
 import admix_and_analyse as aaa
-import seaborn as sea
+import seaborn as sns
 
 
 def mutation_load(m_dt):
@@ -57,8 +57,6 @@ def get_simul_summaries(f):
 
     m_dt = sop.slim_output_parser(path + f)[0]
 
-    if  "huber" in f:
-        m_dt.dominance = huber_dominance(m_dt)
 
     eval_stats_from_slim(m_dt, inplace = True)
 
@@ -67,18 +65,46 @@ def get_simul_summaries(f):
                                     intervalindex,
                                     labels = False)
 
-    run_s = m_dt.groupby(["focal_pop_id", "selection_bins"]
-                          ).agg({"selection": ["count", "mean"], 
-                              "load": ["sum", "mean"],
-                              "fit": ["sum", "mean"],
-                              "morton": ["sum", "mean"],
-                              "mu_1": ["sum", "mean"],
-                              "mu_2": ["sum", "mean"],
-                              "mu_3": ["mean", "sum"],
-                                    })
+
+    if  "huber" in f:
+        m_dt.dominance = huber_dominance(m_dt)
+        m_dt['dominance_key'] = "huber"
+    else:
+        m_dt['dominance_key'] = m_dt.dominance.apply(str)
+
+    stats = {"selection": ["count", "mean"], 
+             "load": ["sum", "mean"],
+             "fit": ["sum", "mean"],
+             "morton": ["sum", "mean"],
+             "mu_1": ["sum", "mean"],
+             "mu_2": ["sum", "mean"],
+             "mu_3": ["mean", "sum"],
+             }
+
+    run_s = m_dt.groupby(["dominance_key", "focal_pop_id", "selection_bins"]
+                        ).agg(stats)
 
     run_s.columns = ['_'.join(col) for col in run_s.columns]
-    return run_s
+    return run_s.reset_index()
+
+def eval_proportion_to_pop(df_stats, pop = "p1"):
+    df = df_stats.sort_values(by = ["level_0", "focal_pop_id", "selection_bins"])
+    df.index = range(df.shape[0])
+
+    d0 = df[df.focal_pop_id == pop]
+    d0.index = range(d0.shape[0])
+    dd0 = pd.concat([d0] * df.focal_pop_id.unique().shape[0])
+    dd0 = dd0.sort_values(by = ["level_0", "focal_pop_id", "selection_bins"])
+    dd0.index = range(dd0.shape[0])
+
+
+    ratios = df.iloc[:,3:] / dd0.iloc[:,3:]
+    ratios = pd.concat([df.iloc[:,:3],
+                        ratios], 
+                       axis = 1)
+
+    return ratios
+
 
 if __name__ == "__main__":
 
@@ -86,16 +112,25 @@ if __name__ == "__main__":
     path = '../data/'
     list_files = os.listdir(path)
 
-    N0 = 11000
-
-    fns = [f for f in list_files if 'huber_l-1000000_' in f]
+    fns = [f for f in list_files if 'l-1000000_' in f]
 
     summaries = pd.concat([get_simul_summaries(f) for f in fns], 
-                          keys = range(len(fns)))
+                           keys = range(len(fns)))
 
-    summaries.head()
-    summaries.groupby("focal_pop_id").load_mean.mean()
-    summaries.groupby("focal_pop_id").mu_1_sum.mean()
+    summaries.groupby(['dominance_key', 'focal_pop_id']).load_sum.count()
 
 
+    summaries.groupby(["dominance", "focal_pop_id"]).load_sum.sum()
+    summaries.groupby(["dominance", "focal_pop_id"]).selection_count.mean()
+    summaries.groupby(["dominance", "focal_pop_id"]).mu_1_sum.sum()
 
+    summaries.groupby("focal_pop_id").mu_1_sum.sum()
+
+
+    s = summariesh[(summariesh.focal_pop_id == "p2")]
+
+    ax = sns.swarmplot(data = s, 
+                       x = 'focal_pop_id', 
+                       y = 'mu_1_sum', 
+                       hue = 'selection_bins')
+    plt.show()
