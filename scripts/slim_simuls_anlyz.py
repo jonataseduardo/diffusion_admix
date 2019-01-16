@@ -57,6 +57,11 @@ def get_simul_summaries(f):
 
     m_dt = sop.slim_output_parser(path + f)[0]
 
+    if  "huber" in f:
+        m_dt.dominance = huber_dominance(m_dt)
+        m_dt['dominance_key'] = "huber"
+    else:
+        m_dt['dominance_key'] = m_dt.dominance.apply(str)
 
     eval_stats_from_slim(m_dt, inplace = True)
 
@@ -64,13 +69,6 @@ def get_simul_summaries(f):
     m_dt["selection_bins"] = pd.cut(m_dt.selection, 
                                     intervalindex,
                                     labels = False)
-
-
-    if  "huber" in f:
-        m_dt.dominance = huber_dominance(m_dt)
-        m_dt['dominance_key'] = "huber"
-    else:
-        m_dt['dominance_key'] = m_dt.dominance.apply(str)
 
     stats = {"selection": ["count", "mean"], 
              "load": ["sum", "mean"],
@@ -85,6 +83,9 @@ def get_simul_summaries(f):
                         ).agg(stats)
 
     run_s.columns = ['_'.join(col) for col in run_s.columns]
+
+    rid = get_rid(f)
+    run_s["rid"] = rid
     return run_s.reset_index()
 
 def eval_proportion_to_pop(df_stats, pop = "p1"):
@@ -105,6 +106,10 @@ def eval_proportion_to_pop(df_stats, pop = "p1"):
 
     return ratios
 
+def get_rid(f):
+    return int(f.split("-")[-1].split('.')[0])
+
+
 
 if __name__ == "__main__":
 
@@ -114,10 +119,16 @@ if __name__ == "__main__":
 
     fns = [f for f in list_files if 'l-1000000_' in f]
 
-    summaries = pd.concat([get_simul_summaries(f) for f in fns], 
-                           keys = range(len(fns)))
+    fh = [f for f in fns if 'huber' in f]
+    f = fh[1]
 
-    summaries.groupby(['dominance_key', 'focal_pop_id']).load_sum.count()
+    summaries = pd.concat([get_simul_summaries(f) for f in fns])
+    
+
+
+    stats_s = {'load_sum': 'sum', 'mu_1_sum': 'sum', 'selection_count': 'sum'}
+    s = summaries.groupby(['rid', 'dominance_key','focal_pop_id']
+            ).agg(stats_s).reset_index()
 
 
     summaries.groupby(["dominance", "focal_pop_id"]).load_sum.sum()
@@ -125,12 +136,12 @@ if __name__ == "__main__":
     summaries.groupby(["dominance", "focal_pop_id"]).mu_1_sum.sum()
 
     summaries.groupby("focal_pop_id").mu_1_sum.sum()
+    
+    summaries[summaries.dominance_key == 'huber'] 
+    ss = s[(s.dominance_key == "0.2")]
 
-
-    s = summariesh[(summariesh.focal_pop_id == "p2")]
-
-    ax = sns.swarmplot(data = s, 
+    ax = sns.boxplot(data = s, 
                        x = 'focal_pop_id', 
-                       y = 'mu_1_sum', 
-                       hue = 'selection_bins')
+                       y = 'load_sum') 
+#                       hue = 'selection_bins')
     plt.show()
