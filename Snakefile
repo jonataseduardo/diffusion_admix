@@ -7,7 +7,6 @@ numpy.set_printoptions(suppress=True)
 NSAMPLE = [100]
 GAMMA = - numpy.round(numpy.logspace(-2, 1.5, 15), decimals = 3)
 DOMINANCE = numpy.round(numpy.linspace(0, 0.5, 11), decimals = 3)
-
 LENGHT = 1000000
 
 afr_eur_moments = expand('data/AfEu_ns{nsample}_g{gamma}_d{dominance}.fs', 
@@ -26,14 +25,16 @@ afr_eur_admix = expand('data/AfEuAdmx_l-{lenght}_rid-{rid}.txt',
 
 afr_eur_admix = expand('data/AfEuAdmx_d-{dominance}_l-{lenght}_rid-{rid}.txt',
                         lenght = LENGHT, 
-                        dominance = [0.0, 0.05, 0.2],
+                        dominance = DOMINANCE,
                         rid = range(100))
 
 rule all:
     input:
-        afr_eur_moments, 
+        #afr_eur_moments, 
         afr_eur_admix_huber,
-        afr_eur_admix
+        afr_eur_admix,
+        afr_eur_admix_dominance
+
 
 rule run_afr_eur_moments:
     output:
@@ -58,14 +59,14 @@ rule run_afr_eur_admix_huber:
         " -l {wildcards.lenght}"
         " -o {output}"
         
-rule run_afr_eur_admix:
+rule run_afr_eur_admix_neutral:
     output:
-        'data/AfEuAdmx_l-{lenght}_rid-{rid}.txt'
+        'data/AfEuAdmx_neutral_l-{lenght}_rid-{rid}.txt'
     shell:
         "python"
         " scripts/slim_simuls.py" 
         " -g jouganous2017"
-        " -mm simple_gamma"
+        " -mm neutral"
         " -l {wildcards.lenght}"
         " -o {output}"
 
