@@ -113,7 +113,7 @@ def huber_model(h_intercept = 0.5, h_rate = 1e6, **kwargs):
             return 1.0 + mut.selectionCoeff;
           else
             return 1.0 + mut.selectionCoeff /
-                   ( {intercept} + {h_rate} * mut.selectionCoeff);
+                   ( {intercept} - {h_rate} * mut.selectionCoeff);
         }}
         """
     return hs_modifier.format(intercept = 1. / h_intercept, h_rate = h_rate)
@@ -443,6 +443,15 @@ def main(mutation_model,
                              **kwargs)
 
     if dominance_model == "huber_model": 
+        if mutation_model == 'neutral':
+            click.echo("Mutation Model is running as simple_gamma default")
+            init = simple_gamma(mu = mutation_rate, 
+                                rho = recombination_rate, 
+                                length = length, 
+                                dominance = dominance_value, 
+                                alpha = alpha, 
+                                beta = beta,
+                                **kwargs)
         init = init + huber_model(**kwargs)
 
     if demographic_model == "gravel2013":
