@@ -197,10 +197,10 @@ def afr_eur_admix(n = 1000, **kwargs):
         }}
 
         // Set up exponential growth in Europe and East Asia
-        // Where N(0) is the base subpopulation size and t = gen - 56541:
+        // Where N(0) is the base subpopulation size and t = gen - 122262:
         //    N(Europe) should be int(round(N(0) * e^(0.00196*t)))
         122262:123721 {{
-                t = sim.generation - 56541;
+                t = sim.generation - 122262;
                 p2_size = round(2271 * exp(0.00196 * t));
                 p2.setSubpopulationSize(asInteger(p2_size));
         }}
@@ -214,7 +214,7 @@ def afr_eur_admix(n = 1000, **kwargs):
                 p5.setMigrationRates(c(p1,p2), c(0.75, 0.25));
               }}
 
-        // Generation 58001 is the present. Output and terminate.
+        // Generation 123722 is the present. Output and terminate.
         123722 late() {{
                 p1.outputSample({n}); 
                 p2.outputSample({n}); 
