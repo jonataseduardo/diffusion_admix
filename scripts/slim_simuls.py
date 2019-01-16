@@ -176,11 +176,11 @@ def afr_eur_admix(n = 1000, **kwargs):
 
         // Expand the African population to 23721
         // This occurs 312000 years (10758) generations ago
-        47242 {{ p1.setSubpopulationSize(23721); }}
+        100000 {{ p1.setSubpopulationSize(23721); }}
 
         // Split non-Africans from Africans and set up migration between them
         // This occurs 125 kyears (4310 generations) ago
-        53690 {{
+        119411 {{
                 sim.addSubpopSplit("p2", 3104, p1);
                 p1.setMigrationRates(c(p2), c(15.8e-5));
                 p2.setMigrationRates(c(p1), c(15.8e-5));
@@ -188,7 +188,7 @@ def afr_eur_admix(n = 1000, **kwargs):
 
         // European subpopulation second bottleneck 
         // This occurs 42.3 kyears (1459 generations) ago
-        56541 {{
+        122262 {{
                 p2.setSubpopulationSize(2271);  // reduce European size
 
                 // Set migration rates for the rest of the simulation
@@ -199,13 +199,13 @@ def afr_eur_admix(n = 1000, **kwargs):
         // Set up exponential growth in Europe and East Asia
         // Where N(0) is the base subpopulation size and t = gen - 56541:
         //    N(Europe) should be int(round(N(0) * e^(0.00196*t)))
-        56541:58000 {{
+        122262:123721 {{
                 t = sim.generation - 56541;
                 p2_size = round(2271 * exp(0.00196 * t));
                 p2.setSubpopulationSize(asInteger(p2_size));
         }}
 
-        58001{{
+        123722{{
                 sim.addSubpop("p3", {n});
                 p3.setMigrationRates(c(p1,p2), c(0.25, 0.75));
                 sim.addSubpop("p4", {n});
@@ -215,7 +215,7 @@ def afr_eur_admix(n = 1000, **kwargs):
               }}
 
         // Generation 58001 is the present. Output and terminate.
-        58001 late() {{
+        123722 late() {{
                 p1.outputSample({n}); 
                 p2.outputSample({n}); 
                 p3.outputSample({n}); 
