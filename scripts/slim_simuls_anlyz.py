@@ -51,7 +51,7 @@ def eval_stats_from_slim(mutation_db, inplace = True):
 def huber_dominance(m_dt, h_intercept = 0.5, h_rate = 1e6):
     s = m_dt["selection"] 
     s0 = 1. / h_intercept
-    return s / (s0 + h_rate * s)
+    return 1. / (s0 - h_rate * s)
 
 def get_simul_summaries(f):
 
@@ -118,13 +118,10 @@ if __name__ == "__main__":
     list_files = os.listdir(path)
 
     fns = [f for f in list_files if 'l-1000000_' in f]
-
     fh = [f for f in fns if 'huber' in f]
-    f = fh[1]
+    f = fh[3]
 
-    summaries = pd.concat([get_simul_summaries(f) for f in fns])
-    
-
+    %time summaries = pd.concat([get_simul_summaries(f) for f in fns])
 
     stats_s = {'load_sum': 'sum', 'mu_1_sum': 'sum', 'selection_count': 'sum'}
     s = summaries.groupby(['rid', 'dominance_key','focal_pop_id']
@@ -138,10 +135,24 @@ if __name__ == "__main__":
     summaries.groupby("focal_pop_id").mu_1_sum.sum()
     
     summaries[summaries.dominance_key == 'huber'] 
-    ss = s[(s.dominance_key == "0.2")]
+    ss = s[(s.dominance_key == "huber")]
+    ss = s[(s.focal_pop_id == "p1")]
 
-    ax = sns.boxplot(data = s, 
-                       x = 'focal_pop_id', 
-                       y = 'load_sum') 
-#                       hue = 'selection_bins')
+    ax = sns.boxplot(data = ss, 
+                       x = 'dominance_key', 
+                       y = 'mu_1_sum') 
     plt.show()
+
+    x = 
+    m_dt.dominance.isinf()
+x.hist()
+
+x = pd.DataFrame() 
+x["selection"] = [-1.0, -0.1, -0.01, -0.001, -0.0001, -0.00000]
+x
+
+m_dt[m_dt.dominance < 0].loc[:,["selection", "dominance"]]
+
+huber_dominance(x)
+
+
