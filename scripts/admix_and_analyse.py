@@ -159,8 +159,7 @@ def plot_admix_hueline(ratios, stats_key):
 
 if __name__ == "__main__":
 
-    #fpath = "../data/"
-    df_stats = admix_and_get_simul_stats('../data/')
+    df_stats = admix_and_get_simul_stats('../moments_data/')
 
     ratios = eval_proportion_to_Afr(df_stats)
     
