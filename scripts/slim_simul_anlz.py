@@ -3,9 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import moments 
-import admix_and_analyse as aaa
 import seaborn as sns
-
 
 def mutation_load(m_dt):
     h = m_dt["dominance"]
@@ -110,18 +108,16 @@ def get_rid(f):
     return int(f.split("-")[-1].split('.')[0])
 
 
-
 if __name__ == "__main__":
 
 
-    path = '../data/'
+    path = '../slim_data/'
     list_files = os.listdir(path)
 
     fns = [f for f in list_files if 'l-1000000_' in f]
-    fh = [f for f in fns if 'huber' in f]
-    f = fh[3]
+    fh = [f for f in fns if ('huber' not in f) and ('neutral' not in f) ]
 
-    %time summaries = pd.concat([get_simul_summaries(f) for f in fns])
+    summaries = pd.concat([get_simul_summaries(f) for f in fh])
 
     stats_s = {'load_sum': 'sum', 'mu_1_sum': 'sum', 'selection_count': 'sum'}
     s = summaries.groupby(['rid', 'dominance_key','focal_pop_id']
@@ -141,18 +137,5 @@ if __name__ == "__main__":
     ax = sns.boxplot(data = ss, 
                        x = 'dominance_key', 
                        y = 'mu_1_sum') 
+
     plt.show()
-
-    x = 
-    m_dt.dominance.isinf()
-x.hist()
-
-x = pd.DataFrame() 
-x["selection"] = [-1.0, -0.1, -0.01, -0.001, -0.0001, -0.00000]
-x
-
-m_dt[m_dt.dominance < 0].loc[:,["selection", "dominance"]]
-
-huber_dominance(x)
-
-
