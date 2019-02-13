@@ -53,13 +53,15 @@ def huber_dominance(m_dt, h_intercept = 0.5, h_rate = 1e6):
 
 def get_simul_summaries(f):
 
-    m_dt = sop.slim_output_parser(path + f)[0]
+    m_dt = sop.slim_output_parser(f)[0]
 
     if  "huber" in f:
         m_dt.dominance = huber_dominance(m_dt)
         m_dt['dominance_key'] = "huber"
+        m_dt['dominance_nkey'] = -0.05 
     else:
         m_dt['dominance_key'] = m_dt.dominance.apply(str)
+        m_dt['dominance_nkey'] = m_dt.dominance
 
     eval_stats_from_slim(m_dt, inplace = True)
 
