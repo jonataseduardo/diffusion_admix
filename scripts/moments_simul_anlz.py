@@ -47,7 +47,7 @@ def stats_from_fs(fs, gamma, h):
     c_order += ["mu_" + str(k +1) for k in range(5)]
     return dt_stats[c_order]
 
-def admix_and_get_simul_stats(fpath, nsimuls = None):
+def admix_and_get_simul_stats(fpath, nsimuls = None, n = 3):
     """
     Read Simulation SFS file and eval the k first moments for of each
     population.
@@ -55,6 +55,7 @@ def admix_and_get_simul_stats(fpath, nsimuls = None):
     Params: 
         fpath file path: string
         k  the total number of moments to be evalueted
+        n number of partitions 
     Return:
         Pandas.DataFrame with multple statistics 
     """
@@ -64,7 +65,7 @@ def admix_and_get_simul_stats(fpath, nsimuls = None):
     if nsimuls is not None:
         list_files = list_files[:nsimuls] 
 
-    l_ratios = numpy.round(numpy.linspace(0.1, 0.9, 9), decimals = 1)
+    l_ratios = numpy.round(numpy.linspace(0, 1, n + 2), decimals = 2)[1:-1]
     df_list = []
     for fn in list_files:
         fs = moments.Spectrum.from_file(fpath + fn)
@@ -79,10 +80,10 @@ def admix_and_get_simul_stats(fpath, nsimuls = None):
         df1["fadmix"] = numpy.round(0.0, decimals = 1)
         df_list += [df1, df0]
         admix_size = int(0.5 * numpy.array(fs.shape).sum()) - 1
-        for f in l_ratios:
+        for f, pid in zip(l_ratios, range(2, len(l_ratios) + 2)):
             fs_admix = moments.Manips.admix_into_new(fs, 0, 1, admix_size, f)
             df_admix = stats_from_fs(fs_admix, g, h) 
-            df_admix["pop_id"] = 2 
+            df_admix["pop_id"] = pid 
             df_admix["fadmix"] = f 
             df_list += [df_admix]
 
