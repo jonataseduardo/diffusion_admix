@@ -51,24 +51,22 @@ def huber_dominance(m_dt, h_intercept = 0.5, h_rate = 1e6):
     s0 = 1. / h_intercept
     return 1. / (s0 - h_rate * s)
 
-def get_simul_summaries(f):
+def get_simul_summaries(f, sel_bins = [-1, -0.01, -0.001, -0.0001, 0]):
 
     m_dt = sop.slim_output_parser(f)[0]
 
     if  "huber" in f:
         m_dt.dominance = huber_dominance(m_dt)
         m_dt['dominance_key'] = "huber"
-        m_dt['dominance_nkey'] = -0.05 
     else:
         m_dt['dominance_key'] = m_dt.dominance.apply(str)
-        m_dt['dominance_nkey'] = m_dt.dominance
 
     eval_stats_from_slim(m_dt, inplace = True)
 
-    intervalindex = [-1.0, -0.1, -0.01, -0.001, -0.0001, 0.0]
-    m_dt["selection_bins"] = pd.cut(m_dt.selection, 
-                                    intervalindex,
-                                    labels = False)
+    intervalindex = sel_bins
+    m_dt["selection_bin"] = pd.cut(m_dt.selection, 
+                                    intervalindex)
+                                    #labels = False)
 
     stats = {"selection": ["count", "mean"], 
              "load": ["sum", "mean"],
@@ -79,7 +77,7 @@ def get_simul_summaries(f):
              "mu_3": ["mean", "sum"],
              }
 
-    run_s = m_dt.groupby(["dominance_key", "focal_pop_id", "selection_bins"]
+    run_s = m_dt.groupby(["dominance_key", "focal_pop_id", "selection_bin"]
                         ).agg(stats)
 
     run_s.columns = ['_'.join(col) for col in run_s.columns]
@@ -89,13 +87,13 @@ def get_simul_summaries(f):
     return run_s.reset_index()
 
 def eval_proportion_to_pop(df_stats, pop = "p1"):
-    df = df_stats.sort_values(by = ["level_0", "focal_pop_id", "selection_bins"])
+    df = df_stats.sort_values(by = ["level_0", "focal_pop_id", "selection_bin"])
     df.index = range(df.shape[0])
 
     d0 = df[df.focal_pop_id == pop]
     d0.index = range(d0.shape[0])
     dd0 = pd.concat([d0] * df.focal_pop_id.unique().shape[0])
-    dd0 = dd0.sort_values(by = ["level_0", "focal_pop_id", "selection_bins"])
+    dd0 = dd0.sort_values(by = ["level_0", "focal_pop_id", "selection_bin"])
     dd0.index = range(dd0.shape[0])
 
 

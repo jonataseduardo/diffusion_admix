@@ -47,7 +47,7 @@ def stats_from_fs(fs, gamma, h):
     c_order += ["mu_" + str(k +1) for k in range(5)]
     return dt_stats[c_order]
 
-def admix_and_get_simul_stats(fpath, nsimuls = None, n = 3):
+def admix_and_get_simul_stats(fpath, nsimuls = None, n = 3, file_pattern = None):
     """
     Read Simulation SFS file and eval the k first moments for of each
     population.
@@ -65,10 +65,17 @@ def admix_and_get_simul_stats(fpath, nsimuls = None, n = 3):
     if nsimuls is not None:
         list_files = list_files[:nsimuls] 
 
+    if file_pattern is not None:
+        list_files = [f for f in list_files if file_pattern in f]
+
     l_ratios = numpy.round(numpy.linspace(0, 1, n + 2), decimals = 2)[1:-1]
     df_list = []
     for fn in list_files:
         fs = moments.Spectrum.from_file(fpath + fn)
+        # For extreme values of gamma numerical erros will return nans and
+        # negative values in the sfs
+        #fs[numpy.isnan(fs)] = 0 
+        #fs[fs < 0] = 0 
         f_par = get_fname_parameters(fn)
         g = f_par["gamma"]
         h = f_par["dominance"]
