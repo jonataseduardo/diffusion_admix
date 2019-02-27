@@ -167,6 +167,8 @@ def boxplot_slim_full(slim_summaries,
     if show:
         fig.show()
 
+    fname = summ_col + '_full.png'
+    fig.savefig('../figures/' + fname)
 
 
 if __name__ == "__main__":
