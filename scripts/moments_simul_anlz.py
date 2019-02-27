@@ -33,6 +33,7 @@ def stats_from_fs(fs, gamma, h):
     """
     stats = dict()
     stats["pi"] = [fs.pi()]
+    stats["num_sites"] = [fs.S()]
     stats["load"] = [gl.mutation_load(fs, gamma, h)]
     stats["fit"] = [gl.fit_efficacy(fs, gamma, h)]
     stats["morton"] = [gl.morton_efficacy(fs, gamma, h)]
