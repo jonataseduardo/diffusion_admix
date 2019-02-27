@@ -107,6 +107,67 @@ def eval_proportion_to_pop(df_stats, pop = "p1"):
 def get_rid(f):
     return int(f.split("-")[-1].split('.')[0])
 
+def dominance_ticks(ss):
+    ss.loc[ss.dominance_key == "huber", "dominance_key"] = "-0.05"
+    ss.dominance_key = pd.to_numeric(ss.dominance_key)
+    xticks = [str(i) for i in sorted(ss.dominance_key.unique())]
+    xticks[0] = 'huber'
+    return xticks
+
+def boxplot_slim_bysel(slim_summaries,
+                       summ_col = 'mu_1_sum',
+                       ylabel = None,
+                       show = True):
+
+    ss = slim_summaries.copy()
+    ticks = dominance_ticks(ss)
+
+    ax = sns.catplot(data = ss,
+                     kind = 'box',
+                     col = 'selection_bin',
+                     col_wrap = 2,
+                     sharey = False,
+                     x = 'dominance_key',
+                     y = summ_col,
+                     hue = "focal_pop_id")
+
+    ax.set_xlabels("dominance")
+    ax.set_xticklabels(ticks)
+    if ylabel is not None:
+        ax.set_ylabels(ylabel)
+
+    fname = summ_col + '_bs.png'
+    ax.savefig('../figures/' + fname)
+    if show:
+        plt.show()
+
+def boxplot_slim_full(slim_summaries, 
+                      summ_col = 'mu_1_sum', 
+                      stat = 'sum',
+                      ylabel = None,
+                      show = True):
+
+    stat_s = {summ_col : stat}
+    ss = slim_summaries.groupby(['rid', 'dominance_key', 'focal_pop_id']
+                                ).agg(stat_s).reset_index()
+    ticks = dominance_ticks(ss)
+
+    ax = sns.boxplot(data = ss, 
+                     x = 'dominance_key', 
+                     y = summ_col,
+                     hue = "focal_pop_id") 
+
+    ax.set(xlabel = "dominance")
+    ax.set_xticklabels(ticks)
+
+    if ylabel is not None:
+        ax.set(ylabel = ylabel)
+
+    fig = ax.get_figure()
+    if show:
+        fig.show()
+
+
 
 if __name__ == "__main__":
 
