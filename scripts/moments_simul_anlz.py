@@ -44,7 +44,7 @@ def stats_from_fs(fs, gamma, h):
 
     dt_stats = pd.DataFrame(stats)
 
-    c_order = ["gamma", "dominance", "pi", "load", "fit", "morton"]
+    c_order = ["gamma", "dominance", "num_sites", "pi", "load", "fit", "morton"]
     c_order += ["mu_" + str(k +1) for k in range(5)]
     return dt_stats[c_order]
 
