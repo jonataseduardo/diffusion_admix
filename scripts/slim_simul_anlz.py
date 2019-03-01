@@ -13,6 +13,9 @@ def mutation_load(m_dt):
 def pi_k(m_dt, k):
     return 2. * (m_dt["mu_" + str(k)] - m_dt["mu_" + str(k + 1)])
 
+def htz(m_dt):
+    return 2. * (m_dt["mu_2"] - m_dt["mu_1"] ** 2)
+
 def Gamma_kh(m_dt, k):
     h = m_dt["dominance"]
     return 2. * (h * pi_k(m_dt, k) + (1. - 2. * h) * pi_k(m_dt, k + 1))
@@ -43,6 +46,7 @@ def eval_stats_from_slim(mutation_db, inplace = True):
     m_dt["fit"] = fit_efficacy(m_dt) 
     m_dt["morton"] = morton_efficacy(m_dt)
     m_dt["load"] = mutation_load(m_dt)
+    m_dt["htz"] = htz(m_dt)
 
     return m_dt
 
@@ -69,6 +73,7 @@ def get_simul_summaries(f, sel_bins = [-1, -0.01, -0.001, -0.0001, 0]):
                                     #labels = False)
 
     stats = {"selection": ["count", "mean"], 
+             "htz": ["sum", "mean"],
              "load": ["sum", "mean"],
              "fit": ["sum", "mean"],
              "morton": ["sum", "mean"],
@@ -108,7 +113,7 @@ def get_rid(f):
     return int(f.split("-")[-1].split('.')[0])
 
 def dominance_ticks(ss):
-    ss.loc[ss.dominance_key == "huber", "dominance_key"] = "-0.05"
+    ss.loc[ss.dominance_key == "huber", "dominance_key"] = "-0.1"
     ss.dominance_key = pd.to_numeric(ss.dominance_key)
     xticks = [str(i) for i in sorted(ss.dominance_key.unique())]
     xticks[0] = 'huber'
@@ -141,11 +146,45 @@ def boxplot_slim_bysel(slim_summaries,
     if show:
         plt.show()
 
+def lineplot_slim_bysel(slim_summaries,
+                        summ_col = 'mu_1_sum',
+                        stat = 'mean',
+                        ylabel = None,
+                        show = False):
+
+    stat_s = {summ_col : stat}
+    ss = slim_summaries.groupby(['selection_bin', 'dominance_key', 'focal_pop_id']
+                                ).agg(stat_s).reset_index()
+    ticks = dominance_ticks(ss)
+
+    #sns.set(style="white")
+
+    #palette = dict(zip(ratios.fadmix.unique(),
+    #                   sns.color_palette("rocket_r", len(ratios.fadmix.unique()))))
+
+    ax = sns.relplot(data = ss, 
+                     x = "dominance_key", 
+                     y = summ_col,
+                     hue = "focal_pop_id",
+                     col = 'selection_bin',
+                     col_wrap = 2,
+                     kind = "line",
+                     facet_kws = {"sharey" : False})
+
+    ax.set_xlabels("dominance")
+    #ax.set_xticklabels(ticks)
+
+    ax.savefig('../figures/' + summ_col + '_line.png')
+
+    if show: 
+        plt.show()
+
+
 def boxplot_slim_full(slim_summaries, 
                       summ_col = 'mu_1_sum', 
                       stat = 'sum',
                       ylabel = None,
-                      show = True):
+                      show = False):
 
     stat_s = {summ_col : stat}
     ss = slim_summaries.groupby(['rid', 'dominance_key', 'focal_pop_id']
@@ -169,6 +208,7 @@ def boxplot_slim_full(slim_summaries,
 
     fname = summ_col + '_full.png'
     fig.savefig('../figures/' + fname)
+
 
 
 if __name__ == "__main__":
