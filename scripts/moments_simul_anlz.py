@@ -33,6 +33,7 @@ def stats_from_fs(fs, gamma, h):
     """
     stats = dict()
     stats["pi"] = [fs.pi()]
+    stats["num_sites"] = [fs.S()]
     stats["load"] = [gl.mutation_load(fs, gamma, h)]
     stats["fit"] = [gl.fit_efficacy(fs, gamma, h)]
     stats["morton"] = [gl.morton_efficacy(fs, gamma, h)]
@@ -43,11 +44,11 @@ def stats_from_fs(fs, gamma, h):
 
     dt_stats = pd.DataFrame(stats)
 
-    c_order = ["gamma", "dominance", "pi", "load", "fit", "morton"]
+    c_order = ["gamma", "dominance", "num_sites", "pi", "load", "fit", "morton"]
     c_order += ["mu_" + str(k +1) for k in range(5)]
     return dt_stats[c_order]
 
-def admix_and_get_simul_stats(fpath, nsimuls = None):
+def admix_and_get_simul_stats(fpath, nsimuls = None, n = 3, file_pattern = None):
     """
     Read Simulation SFS file and eval the k first moments for of each
     population.
@@ -55,6 +56,7 @@ def admix_and_get_simul_stats(fpath, nsimuls = None):
     Params: 
         fpath file path: string
         k  the total number of moments to be evalueted
+        n number of partitions 
     Return:
         Pandas.DataFrame with multple statistics 
     """
@@ -64,10 +66,17 @@ def admix_and_get_simul_stats(fpath, nsimuls = None):
     if nsimuls is not None:
         list_files = list_files[:nsimuls] 
 
-    l_ratios = numpy.round(numpy.linspace(0.1, 0.9, 9), decimals = 1)
+    if file_pattern is not None:
+        list_files = [f for f in list_files if file_pattern in f]
+
+    l_ratios = numpy.round(numpy.linspace(0, 1, n + 2), decimals = 2)[1:-1]
     df_list = []
     for fn in list_files:
         fs = moments.Spectrum.from_file(fpath + fn)
+        # For extreme values of gamma numerical erros will return nans and
+        # negative values in the sfs
+        #fs[numpy.isnan(fs)] = 0 
+        #fs[fs < 0] = 0 
         f_par = get_fname_parameters(fn)
         g = f_par["gamma"]
         h = f_par["dominance"]
@@ -79,10 +88,10 @@ def admix_and_get_simul_stats(fpath, nsimuls = None):
         df1["fadmix"] = numpy.round(0.0, decimals = 1)
         df_list += [df1, df0]
         admix_size = int(0.5 * numpy.array(fs.shape).sum()) - 1
-        for f in l_ratios:
+        for f, pid in zip(l_ratios, range(2, len(l_ratios) + 2)):
             fs_admix = moments.Manips.admix_into_new(fs, 0, 1, admix_size, f)
             df_admix = stats_from_fs(fs_admix, g, h) 
-            df_admix["pop_id"] = 2 
+            df_admix["pop_id"] = pid 
             df_admix["fadmix"] = f 
             df_list += [df_admix]
 
@@ -159,8 +168,7 @@ def plot_admix_hueline(ratios, stats_key):
 
 if __name__ == "__main__":
 
-    #fpath = "../data/"
-    df_stats = admix_and_get_simul_stats('../data/')
+    df_stats = admix_and_get_simul_stats('../moments_data/')
 
     ratios = eval_proportion_to_Afr(df_stats)
     
