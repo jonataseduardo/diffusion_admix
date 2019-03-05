@@ -33,7 +33,7 @@ mutations by individual in a population wich can be computed from as the sum of
 the mean frequency of deleterious mutation (or sum of the first frequency
 moment). 
 
-[]!(mu_1_sum_bs.png)
+[]!(slim-mu1-bs.png)
 
 ### Genetic load 
 
