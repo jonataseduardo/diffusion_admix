@@ -11,7 +11,7 @@ and rate = 0.186). The mutations rate was set to 1e-17 and the recombination
 rate used was 1e-8. For each simulation we assumed a fixed dominance
 coefficient varying from  h= 0 (totally recessive effects) to h = 0.5 (additive
 effects).  In addition to the fixed dominance we also simulated the model
-proposed by Hubber el al 2018 where the dominance is a function of selection h
+proposed by Huber et.al. 2018 where the dominance is a function of selection h
 = 1/(a + b \* s) where h(s=0) = 1/a = 0.5 is the value of dominance of neutral
 mutations and b = 1e6. 
 
@@ -26,18 +26,19 @@ Finally, we create 3 admixed population from a single pulse admixture between
 the African and European population for with 0.25, 0.5, 0.75 proportions of
 Africa ancestry.  
 
+In the following figures the African population label is p1 the European
+population label is p2. The labels p3, p4 and p5 corresponds populations
+with 25\%, 50\%, 75\%  of Africa ancestry.  
 
-In the following figures the African poulation label is p1 the European
-population label is p2, p3 and p4 have 25\%, 50\%, 75\%  of Africa ancestry.  
-
-The boxplots summarizes the results of 100 simulations. 
+The boxplots summarizes the results of 100 simulations, and in each simulation
+we sampled 1000 individuals from each population. 
 
 
 ### Morton Genetic load  
 
 The Morton genetic load is defined as the average number of deleterious
-mutations by individual in a population wich can be computed from as the sum of
-the mean frequency of deleterious mutation (or sum of the first frequency
+mutations by individual in a population which can be computed from as the sum
+of the mean frequency of deleterious mutation (or sum of the first frequency
 moment). 
 
 ![](slim-mu1-bs.png)
@@ -59,15 +60,28 @@ heterosigosity
 
 ### Number of segregating sites 
 
+
 ![](num_sites.png)
 
 
+### Morton efficacy
+
+The Morton measures the rate in which selection removes deleterious mutations
+in a populations. 
+
+![](morton_sum_bs.png)
+
 ## Conclusions 
+
+It is possible to see an accumulation of deleterious mutations 
   
 
 ## Caveats 
 
-* The DFE used in this simulations is narows then the human the ones proposed
-  in the recent literature. 
-* The coefficient b used also is too big. 
+* The DFE used in this simulations is narrower then the one estimated for
+  humans in the recent literature. 
+* The coefficient b used also is too big making most variants almost recessive.
+* The simulation takes too much time to run, probably I will need to rescale
+  the effective pop size so it can run faster. 
 
+## 
