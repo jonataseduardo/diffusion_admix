@@ -31,7 +31,9 @@ population label is p2. The labels p3, p4 and p5 corresponds populations
 with 25\%, 50\%, 75\%  of Africa ancestry.  
 
 The boxplots summarizes the results of 100 simulations, and in each simulation
-we sampled 1000 individuals from each population. 
+we sampled 1000 individuals from each population. The quadrants in the figures
+shows the resulting statistics for aggregations of deleterious variants by the
+magnitude of its selection coefficient. 
 
 
 ### Morton Genetic load  
@@ -50,16 +52,14 @@ The genetic load is defined as L = -s sum \[2h x1 + (1 - 2h) x2]
 
 ![](load_sum_bs.png)
 
-
 ### Genetic diversity
 
 The genetic diversity is defined as the summation of the nucleotide
-heterosigosity 
+heterozygousity 
 
 ![](htz_sum_bs.png)
 
 ### Number of segregating sites 
-
 
 ![](num_sites.png)
 
@@ -73,7 +73,16 @@ in a populations.
 
 ## Conclusions 
 
-It is possible to see an accumulation of deleterious mutations 
+* It is possible to see an accumulation of extremely deleterious mutations in the
+simulated European population in relation with the African population. This
+accumulation is very pronounced when the mutations are totally recessive, but
+it is still present for different values of h.  
+
+* Most of the statistics for the admixed populations are between the values for
+  the European and African populations. 
+
+* The number of segregating sites in the admixed populations is higher then in
+  the parental populations. 
   
 
 ## Caveats 
@@ -84,4 +93,13 @@ It is possible to see an accumulation of deleterious mutations
 * The simulation takes too much time to run, probably I will need to rescale
   the effective pop size so it can run faster. 
 
-## 
+##  Next steps
+
+* Replicate this results on the gnomAD data set and check if there is an
+  accumulation of deleterious mutation for European and East Asian population
+  using the rank of score of several functional annotations such as CADD, Gerp,
+  etc as a proxy for selection coefficients. 
+
+* Replicate the results of the slim simulations using WF diffusion simulations.
+  This will need to be done using dadi since the Moments get numeric errors for
+  values of 2Ns < -50.  
