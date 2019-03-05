@@ -4,25 +4,8 @@ import numpy
 
 numpy.set_printoptions(suppress=True)
 
-NSAMPLE = [5]
-#GAMMA = [-100, -50, -10, -5, -1, -0.5, -0.1, -0.05, -0.01]
-#DOMINANCE = [0.0, 0.01, 0.05, 0.1, 0.3, 0.5]
-GAMMA = - numpy.round(numpy.logspace(-2, 2, 2), decimals = 2)
-DOMINANCE = numpy.round(numpy.linspace(0, 0.5, 2), decimals = 2)
 
-#rule all:
-#    input:
-#        expand('data/AfEu_ns{nsample}_g{gamma}_d{dominance}.fs', 
-#               nsample=NSAMPLE,
-#               gamma=GAMMA,
-#               dominance=DOMINANCE)
-
-rule moments_afr_eur:
-    input:
-        expand('data/AfEu_ns{nsample}_g{gamma}_d{dominance}.fs', 
-               nsample=NSAMPLE,
-               gamma=GAMMA,
-               dominance=DOMINANCE)
+rule run_afr_eur_moments:
     output:
         'data/AfEu_ns{nsample}_g{gamma}_d{dominance}.fs'
     shell:
@@ -31,4 +14,39 @@ rule moments_afr_eur:
         " -ns {wildcards.nsample}" 
         " -g {wildcards.gamma}"
         " -d {wildcards.dominance}"
+        " -o {output}"
+
+rule run_afr_eur_admix_huber:
+    output:
+        'data/AfEuAdmx_huber_l-{lenght}_rid-{rid}.txt'
+    shell:
+        "python"
+        " scripts/slim_simuls.py" 
+        " -g jouganous2017"
+        " -mm simple_gamma"
+        " -dm huber_model" 
+        " -l {wildcards.lenght}"
+        " -o {output}"
+        
+rule run_afr_eur_admix_neutral:
+    output:
+        'data/AfEuAdmx_neutral_l-{lenght}_rid-{rid}.txt'
+    shell:
+        "python"
+        " scripts/slim_simuls.py" 
+        " -g jouganous2017"
+        " -mm neutral"
+        " -l {wildcards.lenght}"
+        " -o {output}"
+
+rule run_afr_eur_admix_dominance:
+    output:
+        'data/AfEuAdmx_d-{dominance}_l-{lenght}_rid-{rid}.txt'
+    shell:
+        "python"
+        " scripts/slim_simuls.py" 
+        " -g jouganous2017"
+        " -mm simple_gamma"
+        " -d {wildcards.dominance}"
+        " -l {wildcards.lenght}"
         " -o {output}"
