@@ -33,11 +33,13 @@ mutations by individual in a population wich can be computed from as the sum of
 the mean frequency of deleterious mutation (or sum of the first frequency
 moment). 
 
-[]!(slim-mu1-bs.png)
+![](slim-mu1-bs.png)
 
 ### Genetic load 
 
 The genetic load is defined as L = -s sum \[2h x1 + (1 - 2h) x2] 
+
+![](load_sum_bs.png)
 
 
 ### Genetic diversity
@@ -45,5 +47,10 @@ The genetic load is defined as L = -s sum \[2h x1 + (1 - 2h) x2]
 The genetic diversity is defined as the summation of the nucleotide
 heterosigosity 
 
+![](htz_sum_bs.png)
 
 ### Number of segregating sites 
+
+![](num_sites.png)
+
+
