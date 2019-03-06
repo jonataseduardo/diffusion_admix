@@ -61,7 +61,7 @@ heterozygousity
 
 ### Number of segregating sites 
 
-![](num_sites.png)
+![](selection_count_bs.png)
 
 
 ### Morton efficacy
@@ -102,4 +102,4 @@ it is still present for different values of h.
 
 * Replicate the results of the slim simulations using WF diffusion simulations.
   This will need to be done using dadi since the Moments get numeric errors for
-  values of 2Ns < -50.  
+  values of 2Ns < -50 
