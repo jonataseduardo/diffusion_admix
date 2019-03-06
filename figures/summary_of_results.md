@@ -1,34 +1,33 @@
 #Results of SLIM3 simulations
 
-
-In this document we will look to some effects of negative selection under
+In this document, we will look to some effects of negative selection under
 different dominance constraints on the genetic variability of human admixed
-populations. For this we used the humans Out-Of-Africa demography inferred of
-by Jouganous2017 adding of single pulse admixture events in the end. 
+populations. For this, we used the humans Out-Of-Africa demography inferred of
+by Jouganous2017 adding single pulse admixture events in the end. 
 
-In this model, humans first expand its effective population size from 11273
+In this model, humans first expand their effective population size from 11273
 individuals to 23721 in the African Continent around 302 kyears (1 generation
 is equal 29 years). The Out-of-Africa split takes place 125 kyears in the past
 with a population with 3004 effective size. The European population starts to
-grow in size exponentially around 42kyears. Finally, we create 3 admixed
-population from a single pulse admixture between the African and European
-population with 0.25, 0.5, 0.75 African proportion.
+grow in size exponentially around 42kyears. At the end of the demographic
+processes, we create 3 admixed population from a single pulse admixture between
+the African and European population with 0.25, 0.5, 0.75 African proportion.
 
-Under this demography we simulated deleterious mutations in chromosomes of 1Mbp
-with selection coefficient sampled from a gamma distribution DFE (shape =
--0.0065 and rate = 0.186). The mutations rate was set to 1e-7 and the
+Under this demography, we simulated chromosomes of 1Mbp with deleterious
+mutations with selection coefficient sampled from a gamma distribution DFE
+(shape = -0.0065 and rate = 0.186). The mutations rate was set to 1e-7 and the
 recombination rate used was 1e-8. We have run simulations with several values
-of dominance ,varying from h = 0 (totally recessive) to h = 0.5 (additive)
-where in each simulation the value of the dominance coefficient is constant. We
+of dominance, varying from h = 0 (totally recessive) to h = 0.5 (additive)
+wherein each simulation the value of the dominance coefficient is constant. We
 also simulated the model proposed by Huber et.al. 2018 where the dominance is a
 function of selection h = 1/(a + b \* s) where h(s=0) = 1/a = 0.5 is the value
 of dominance of neutral mutations and b = 1e6. 
 
-In the following figures the African population label is p1 the European
-population label is p2. The labels p3, p4 and p5 corresponds populations
+In the following figures, the African population label is p1 the European
+population label is p2. The labels p3, p4, and p5 correspond populations
 with 25\%, 50\%, 75\%  of African ancestry.  
 
-The boxplots summarizes the results of 100 simulations, and in each simulation
+The boxplots summarize the results of 100 simulations, and in each simulation,
 we sampled 1000 individuals from each population. The quadrants in the figures
 shows the resulting statistics evaluated on sets of deleterious variants
 aggregated by the magnitude of the selection coefficient. 
@@ -71,10 +70,11 @@ in a populations.
 
 ## Conclusions 
 
-* It is possible to see an accumulation of extremely deleterious mutations in the
-simulated European population in relation with the African population. This
-accumulation is very pronounced when the mutations are totally recessive, but
-it is still present for different values of h.  
+* It is possible to see an accumulation of extremely deleterious mutations in
+  the simulated European population in comparison with the African population.
+  This accumulation is very pronounced when the mutations are totally
+  recessive, but it is still present for values of h up to 0.2 (I needs to
+  check this statement more carefully).  
 
 * Most of the statistics for the admixed populations are between the values for
   the European and African populations. 
