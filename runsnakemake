@@ -1,1 +1,1 @@
-snakemake --jobs 30 --cluster 'qsub -q long -j oe -o teste.out' 
+snakemake --rerun-incomplete --jobs 80 --cluster 'qsub -q long -j oe -l walltime=48:00:00 -l mem=10gb -o slim.out' 

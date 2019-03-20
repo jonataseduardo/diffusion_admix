@@ -4,6 +4,7 @@ import numpy
 
 numpy.set_printoptions(suppress=True)
 
+<<<<<<< HEAD
 NSAMPLE = [100]
 #GAMMA = - numpy.round(numpy.logspace(-2, 1.5, 15), decimals = 3)
 GAMMA = - numpy.round(numpy.logspace(-1, 3, 30), decimals = 3)
@@ -36,6 +37,8 @@ rule all:
         afr_eur_admix_n,
         afr_eur_admix_d
 
+=======
+>>>>>>> e8f72771c9a041f1ef3910d481bcf53e47f844c1
 
 rule run_afr_eur_moments:
     output:
