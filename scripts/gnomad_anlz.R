@@ -266,7 +266,7 @@ all.equal(sfs_small, sfs)
 
 
 sfs_1d <- sfs_1d_from_ac(gad, pop_list[1], score)
-system.time(sfs_small_1d <- project_sfs_1d_1(sfs_1d, 16256))
+system.time(sfs_small_1d <- project_sfs_1d(sfs_1d, 16256))
 setkeyv(sfs_small_1d, key(sfs_1d))
 all.equal(sfs_small_1d, sfs_1d)
 
