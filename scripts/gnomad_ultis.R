@@ -2,7 +2,6 @@ library(data.table)
 library(parallel)
 library(ggplot2)
 
-
 ## Functions 
 
 rm_fixed_alleles <-
@@ -281,4 +280,58 @@ project_onepop_sfs  <-
     return(sfs_project)
   }
 
+summarise_scores_norm_quantile <- 
+  function(gad, 
+           wd = 0.01, 
+           quant_th = 0.1){
+
+    norm_scores <- 
+      grep("_norm", names(gad), value = TRUE) 
+
+    score_names <- 
+      gsub("(^.+)(_norm$)", "\\1", norm_scores)
+
+    nq_sumry <- 
+      gad[, lapply(.SD, quantile, seq(0, 1, wd), na.rm = TRUE), 
+          .SDcols = norm_scores]
+
+    setnames(nq_sumry, norm_scores, score_names)
+
+    nq_sumry[, quant := seq(0, 1, wd)]
+
+    long_nq <- 
+      melt(nq_sumry, id.vars = c("quant"), 
+           variable.name = 'annotation', value.name = 'norm_score')
+
+    qual <- 
+      long_nq[quant > 1 - quant_th, 
+              .(quality = round(100 * sum(quant - norm_score))), 
+              by = annotation]
+
+    long_nq <- 
+      long_nq[qual, on = .(annotation)]
+
+    setkey(long_nq, quality, annotation)
+
+    annot_level <- 
+      long_nq[, .GRP, keyby = .(quality, annotation)][, annotation]
+
+    long_nq[, annotation := factor(annotation, levels = annot_level)]
+    long_nq[, quality_rank := .GRP, keyby = .(quality, annotation)] 
+
+    make_plot <- 
+      function(){
+        ggplot(long_nq, aes(y = norm_score, x = quant, colour = annotation)) + 
+          theme_classic() +
+          scale_colour_viridis_d() + 
+          guides(colour = guide_legend(ncol=4)) + 
+          labs(x = 'score quantile', y = 'normalized score') +
+          theme(legend.position = 'bottom', 
+                legend.title = element_blank()) + 
+          geom_line()
+        ggsave('normalized_scores_quantililes.png')
+      }
+
+    make_plot()
+  }
 
