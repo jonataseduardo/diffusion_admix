@@ -336,9 +336,9 @@ summarise_scores_norm_quantile <-
   }
 
 apply_ttest <-
-  function(gad, pop1, pop2, score, inplace = FALSE){
+  function(gad, pop1, pop2, score, inplace = TRUE){
 
-    if(inplace)
+    if(!inplace)
       gad <- copy(gad)
 
     AF_pop1 = paste0('AF_', pop1)
