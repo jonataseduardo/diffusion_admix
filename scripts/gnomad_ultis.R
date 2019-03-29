@@ -335,3 +335,34 @@ summarise_scores_norm_quantile <-
     make_plot()
   }
 
+apply_ttest <-
+  function(gad, pop1, pop2, score, inplace = FALSE){
+
+    if(inplace)
+      gad <- copy(gad)
+
+    AF_pop1 = paste0('AF_', pop1)
+    AF_pop2 = paste0('AF_', pop2)
+    score_quantile = paste0(score, '_quantile')
+
+    setnames(gad, c(AF_pop1, AF_pop2), c("AF_x", "AF_y"))
+    ttest_dt <- 
+      gad[, data.table(t(unlist(t.test(AF_x, AF_y)))), 
+            keyby = c(score_quantile)][, c(1:2, 4:8)]
+
+    setnames(ttest_dt, 
+             c(score_quantile, "estimate.mean of x", "estimate.mean of y"),
+             c('quantiles', 'mean_AF_pop1', 'mean_AF_pop2'))
+
+
+    old_t_names <- names(ttest_dt)
+    new_t_names <- c('score', 'pop1', 'pop2', old_t_names) 
+
+    ttest_dt[, `:=`(score = score, pop1 = pop1, pop2 = pop2)]
+
+    setcolorder(ttest_dt, new_t_names)
+
+    setnames(gad, c("AF_x", "AF_y"), c(AF_pop1, AF_pop2))
+
+    return(ttest_dt[])
+  }
