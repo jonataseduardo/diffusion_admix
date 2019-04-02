@@ -22,32 +22,14 @@ gad <-
 
 setkey(gad, Chr, Start, Ref)
 system.time(make_delrank(gad))
-system.time(make_delquantile(gad))
 system.time(rescale_ac(gad))
 system.time(normalize_del_score(gad))
-system.time(summarise_scores_norm_quantile(gad))
+system.time(make_delquantile(gad, breaks = c(seq(0, 0.5, 0.1), 1)))
 
-scols <- 
-    c("Chr", "Start", "Ref","Alt", "rsid", 
-			"GERP_RS_score", "GERP_RS_rank", "GERP_RS_quantile",
-      "AC_afr", "AN_afr", "AC_amr", "AN_amr", "AC_nfe", "AN_nfe")
+system.time(summarise_scores_norm_quantile(gad))
 
 del_info <-
   grep("_quantile$", names(gad), value = TRUE)
-del_info
-
-AF_pop1 = 'AF_afr'
-AF_pop2 = 'AF_nfe'
-score_quantile = 'REVEL_quantile'
-
-
-gad[AF_nfe > 0.0, mean(AF_nfe)]
-gad[AF_nfe > 0.0, .N]
-gad[AF_afr > 0.0, .N]
-
-combn(1:3, 2)
-
-sort(pop_list)
 
 pop_freq <- 
   grep("^AF_[a-z]{3}$", names(gad), value = TRUE)
@@ -61,14 +43,13 @@ pop_comb <- combn(pop_list, 2)
 scores_list <- 
   gsub("(^.+)(_quantile$)", "\\1",
     grep("_quantile", names(gad), value = TRUE))
-scores_list
 
 system.time(
 ttest_data <- 
   rbindlist(
   lapply(scores_list, function(score){
     rbindlist(
-    lapply(1:dim(pop_comb)[2],
+    mclapply(1:dim(pop_comb)[2],
            function(i){
              pop1 <- pop_comb[1,i] 
              pop2 <- pop_comb[2,i]
@@ -76,29 +57,40 @@ ttest_data <-
              an <- paste0("AN_", c(pop1, pop2))
              t_dt <- 
                apply_ttest(rm_fixed_alleles(gad, ac, an),
-                           pop1, pop2, score)
+                           pop1, pop2, score, inplace = TRUE)
 
              return(t_dt)
-           }))
+           }, mc.cores = length(scores_list)))
          })
   )
 )
 
+setkey(ttest_data1, score, pop1, pop2, quantiles)
+
+ttest_data1 <- 
+  copy(ttest_data)
 
 ttest_data[pop1 == 'afr' & pop2 == 'nfe' & p.value < 0.05][order(quantiles)]
+ttest_data[pop1 == 'afr' & pop2 == 'nfe' & p.value < 0.05][, .N, by = .(score)]
+
+ttest_data[p.value < 0.05][pop1 == 'afr']
+
+ttest_data[pop1 == 'afr' & mean_AF_pop1 < mean_AF_pop2 & p.value < 0.5]
+
+ttest_data[score == 'Polyphen2_HDIV' & p.value < 0.05]
 
 scols <- c(paste0(score, '_quantile'), pop_freq)
 
-system.time(
-gad[, data.table(t(unlist(t.test(AF_afr, AF_nfe), use.names = FALSE))), by = REVEL_quantile]
-)
+scols <- 
+    c("Chr", "Start", "Ref","Alt", "rsid", 
+			"GERP_RS_score", "GERP_RS_rank", "GERP_RS_quantile",
+      "AC_afr", "AN_afr", "AC_amr", "AN_amr", "AC_nfe", "AN_nfe")
 
 
-gad[, data.table(t(unlist(wilcox.test(AF_afr, AF_nfe, conf.int = TRUE), use.names = FALSE))), by = REVEL_quantile]
-
-
+score = scores_list[21]
 
 sfs_afr_full <- sfs_1d_from_ac(gad, pop = 'afr', score = score)
+
 system.time(sfs_afr_small <- project_sfs_1d(sfs_afr_full, AN_afr, folded = FALSE))
 setkeyv(sfs_afr_small, key(sfs_afr_full))
 all.equal(sfs_afr_small, sfs_afr_full)
@@ -107,46 +99,98 @@ ac <- paste0("AC_", pop_list)
 an <- paste0("AN_", pop_list)
 
 sfs_full <- sfs_from_ac(gad, pop_list, score)
-sfs_afr_nfe <- sfs_from_ac(gad, c("afr", "nfe"), score)
 
-sfs_afr_nfe1 <- 
-  sfs_afr_nfe[score == score & 
-              quantiles == "[0,0.01]"]
+sfs_afr_nfe <- 
+  rm_fixed_alleles(
+    sfs_from_ac(gad, c("afr", "nfe"), score),
+    paste0('AC_', c("afr", "nfe")),
+    paste0('AN_', c("afr", "nfe")))
 
-sfs_small_afr_nfe <- 
-  project_onepop_sfs(sfs_afr_nfe[score == score & 
-                     quantiles == "[0,0.01]"], 
-                     "nfe", 
-                      AN_afr)
+AN_afr <- sfs_afr_nfe[1, AN_afr]
+AN_nfe <- sfs_afr_nfe[1, AN_nfe]
+delta_AN <- round((AN_nfe - AN_afr) / 4)
 
-sfs_afr_nfe1[, mean(AC_afr/ AN_afr * num_sites)]
-sfs_small_afr_nfe[, mean(AC_afr/ AN_afr * num_sites)]
-sfs_afr_nfe1[, mean(AC_nfe/ AN_nfe * num_sites)]
-sfs_small_afr_nfe[, mean(AC_nfe/ AN_nfe * num_sites)]
-
-
-sfs_full <- rm_fixed_alleles(sfs_full, ac, an)
-
-sfs_small2 <- copy(sfs_small)
-sfs_small2[, num_sites := round(num_sites)]
-sfs_small2[num_sites > 0]
-
-AN_afr <- sfs_full[1, AN_afr] 
-sfs_small <- sfs_full[quantiles == "[0,0.01]"]
-pop = "afr"
 system.time(
-for(pop in pop_list[2:3]){
-  sfs_small <- 
-    project_onepop_sfs(sfs_small, pop, AN_afr)
-}
+sfs_small_afr_nfe <- 
+  rbindlist(
+  mclapply(
+    seq(AN_afr, AN_nfe - delta_AN, delta_AN), 
+    function(AN_new){
+      project_onepop_sfs(sfs_afr_nfe[quantiles == "[0,0.1]"], 
+                         "nfe", 
+                          AN_new,
+                          inplace = TRUE)
+    }, 
+    mc.cores = 4
+  ))
 )
 
-sfs_small
-af_small <- af_from_sfs(sfs_small)
-af_small1 <- af_from_sfs(sfs_small1)
+sfs_afr_nfe[AC_afr > 0, .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
+                sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
+                by = .(quantiles, AN_nfe)]
 
-sfs_small[, mean(AC_afr/ AN_afr * num_sites)] * 1000
-af_small[, .(mean(AF_afr))] * 1000
-af_small1[, .(mean(AF_afr))] * 1000
+sfs_afr_nfe[, 
+            .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
+              sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
+                by = quantiles]
 
-round(0.509098, digits = 1)
+
+sfs_small_afr_nfe[, 
+                  .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
+                    sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
+                   by = .(quantiles, AN_nfe)]
+
+sfs_small_afr_nfe[AC_afr > 0, 
+                  .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
+                    sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
+                   by = .(quantiles, AN_nfe)]
+
+
+
+conditional = 'all'
+make_round = F
+digits = 0
+
+emv_sfs_afr_nfe  <-
+  function(sfs_dt, conditional = 'all', make_round = FALSE, digits = 0L){
+
+    if(conditional == 'all'){
+      sfs_dt <- copy(sfs_dt)
+    }else{
+      sfs_dt <- sfs_dt[eval(parse(text=conditional))]
+    }
+
+    if(make_round){
+      sfs_dt <- 
+        sfs_dt[, num_sites := round(num_sites, digits = digits)
+               ][num_sites > 0]
+    }else{
+      digits = -1L
+    }
+
+    sfs_dt[, `:=`(AF_afr = AC_afr / AN_afr, AF_nfe = AC_nfe / AN_nfe)]
+    mean_dt <- 
+      sfs_dt[,.(mean_AF_afr = sum(AF_afr * num_sites) / sum(num_sites), 
+                mean_AF_nfe = sum(AF_nfe * num_sites) / sum(num_sites),
+                total_num_sites = sum(num_sites),
+                conditional = conditional,
+                digits = digits),
+            by = .(score, quantiles, AN_nfe)]
+
+    var_dt <- 
+      sfs_dt[mean_dt, on = .(score, quantiles, AN_nfe)
+            ][, .(var_AF_afr = sum((AF_afr - mean_AF_afr) ^ 2) / sum(num_sites) ^ 2,
+                  var_AF_nfe = sum((AF_nfe - mean_AF_nfe) ^ 2) / sum(num_sites) ^ 2),
+                by = .(score, quantiles, AN_nfe)]
+
+    out_dt <- var_dt[mean_dt, on = .(score, quantiles, AN_nfe)]
+
+    return(out_dt)
+  }
+
+mdt <- 
+  emv_sfs_afr_nfe(sfs_small_afr_nfe, 
+                  conditional = 'AC_afr > 0', 
+                  make_round = TRUE, digits = 4)
+
+mdt
