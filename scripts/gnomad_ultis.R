@@ -231,8 +231,10 @@ af_from_sfs <-
 project_sfs_1d <-
   function(sfs_dt, AN_new, groups = "all_groups", folded = TRUE){
     
-    if(groups == "all_groups")
-      groups <- setdiff(names(sfs_dt), c("AN", "AC", "num_sites"))
+    if(!is.null(groups)){
+      if(groups == "all_groups")
+        groups <- setdiff(names(sfs_dt), c("AN", "AC", "num_sites"))
+    }
 
     if(folded){
       AN_new_fold <- AN_new / 2
@@ -246,7 +248,7 @@ project_sfs_1d <-
                  num_sites = num_sites), 
               by = c(groups, c("AN", "AC"))
              ][, proj_i := dhyper(AC_new, AN_new, AN - AN_new, AC)
-             ][, .(num_sites_new = round(sum(num_sites * proj_i), digits = 0)), 
+             ][, .(num_sites_new = sum(num_sites * proj_i)), 
                keyby = c(groups, c("AN_new", "AC_new"))]
 
     setnames(sfs_project, 
@@ -259,13 +261,19 @@ project_sfs_1d <-
   }
 
 project_onepop_sfs  <- 
-  function(sfs_dt, pop, AN_new, folded = TRUE){
+  function(sfs_dt, pop, AN_new, 
+           folded = TRUE, 
+           groups = 'all_groups', 
+           inplace = FALSE){
+
+    if(inplace)
+      sfs_dt <- copy(sfs_dt)
 
     old_names <- names(sfs_dt)
     setnames(sfs_dt, paste0(c("AN_", "AC_"), pop), c("AN", "AC"))
 
     sfs_project <- 
-      project_sfs_1d(sfs_dt, AN_new, folded = folded)
+      project_sfs_1d(sfs_dt, AN_new, folded = folded, groups = groups)
 
     setnames(sfs_dt, c("AN", "AC"), paste0(c("AN_", "AC_"), pop))
     setnames(sfs_project, c("AN", "AC"), paste0(c("AN_", "AC_"), pop))
@@ -336,9 +344,9 @@ summarise_scores_norm_quantile <-
   }
 
 apply_ttest <-
-  function(gad, pop1, pop2, score, inplace = TRUE){
+  function(gad, pop1, pop2, score, inplace = FALSE){
 
-    if(!inplace)
+    if(inplace)
       gad <- copy(gad)
 
     AF_pop1 = paste0('AF_', pop1)
@@ -366,3 +374,44 @@ apply_ttest <-
 
     return(ttest_dt[])
   }
+
+emv_sfs_afr_nfe  <-
+  function(sfs_dt, conditional = 'all', digits = -1L){
+
+    if(conditional == 'all'){
+      sfs_dt <- copy(sfs_dt)
+    }else{
+      sfs_dt <- sfs_dt[eval(parse(text=conditional))]
+    }
+
+    if(digits >= 0){
+      sfs_dt <- 
+        sfs_dt[, num_sites := round(num_sites, digits = digits)
+               ][num_sites > 0]
+    }else{
+      digits = -1L
+    }
+
+    sfs_dt[, `:=`(AF_afr = AC_afr / AN_afr, AF_nfe = AC_nfe / AN_nfe)]
+    mean_dt <- 
+      sfs_dt[,.(mean_AF_afr = sum(AF_afr * num_sites) / sum(num_sites), 
+                mean_AF_nfe = sum(AF_nfe * num_sites) / sum(num_sites),
+                total_num_sites = sum(num_sites),
+                conditional = conditional,
+                digits = digits),
+            by = .(score, quantiles, AN_nfe)]
+
+    var_dt <- 
+      sfs_dt[mean_dt, on = .(score, quantiles, AN_nfe)
+            ][, .(var_AF_afr = sum((AF_afr - mean_AF_afr) ^ 2) / 
+                                sum(num_sites) ^ 2,
+                  var_AF_nfe = sum((AF_nfe - mean_AF_nfe) ^ 2) / 
+                                sum(num_sites) ^ 2),
+                by = .(score, quantiles, AN_nfe)]
+
+    out_dt <- var_dt[mean_dt, on = .(score, quantiles, AN_nfe)]
+
+    return(out_dt)
+  }
+
+

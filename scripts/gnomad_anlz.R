@@ -91,7 +91,10 @@ score = scores_list[21]
 
 sfs_afr_full <- sfs_1d_from_ac(gad, pop = 'afr', score = score)
 
-system.time(sfs_afr_small <- project_sfs_1d(sfs_afr_full, AN_afr, folded = FALSE))
+system.time(
+  sfs_afr_small <- project_sfs_1d(sfs_afr_full, AN_afr, folded = FALSE))
+
+
 setkeyv(sfs_afr_small, key(sfs_afr_full))
 all.equal(sfs_afr_small, sfs_afr_full)
 
@@ -125,72 +128,28 @@ sfs_small_afr_nfe <-
   ))
 )
 
-sfs_afr_nfe[AC_afr > 0, .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
-                sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
-                by = .(quantiles, AN_nfe)]
 
-sfs_afr_nfe[, 
-            .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
-              sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
-                by = quantiles]
+conditions <- 
+  c('all', 'AC_afr > 0', 'AC_nfe > 0', '(AC_afr > 0) & (AC_nfe > 0)')
 
-
-sfs_small_afr_nfe[, 
-                  .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
-                    sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
-                   by = .(quantiles, AN_nfe)]
-
-sfs_small_afr_nfe[AC_afr > 0, 
-                  .(sum((AC_afr / AN_afr) * num_sites) / sum(num_sites), 
-                    sum((AC_nfe / AN_nfe) * num_sites) / sum(num_sites)),
-                   by = .(quantiles, AN_nfe)]
-
-
-
-conditional = 'all'
-make_round = F
-digits = 0
-
-emv_sfs_afr_nfe  <-
-  function(sfs_dt, conditional = 'all', make_round = FALSE, digits = 0L){
-
-    if(conditional == 'all'){
-      sfs_dt <- copy(sfs_dt)
-    }else{
-      sfs_dt <- sfs_dt[eval(parse(text=conditional))]
-    }
-
-    if(make_round){
-      sfs_dt <- 
-        sfs_dt[, num_sites := round(num_sites, digits = digits)
-               ][num_sites > 0]
-    }else{
-      digits = -1L
-    }
-
-    sfs_dt[, `:=`(AF_afr = AC_afr / AN_afr, AF_nfe = AC_nfe / AN_nfe)]
-    mean_dt <- 
-      sfs_dt[,.(mean_AF_afr = sum(AF_afr * num_sites) / sum(num_sites), 
-                mean_AF_nfe = sum(AF_nfe * num_sites) / sum(num_sites),
-                total_num_sites = sum(num_sites),
-                conditional = conditional,
-                digits = digits),
-            by = .(score, quantiles, AN_nfe)]
-
-    var_dt <- 
-      sfs_dt[mean_dt, on = .(score, quantiles, AN_nfe)
-            ][, .(var_AF_afr = sum((AF_afr - mean_AF_afr) ^ 2) / sum(num_sites) ^ 2,
-                  var_AF_nfe = sum((AF_nfe - mean_AF_nfe) ^ 2) / sum(num_sites) ^ 2),
-                by = .(score, quantiles, AN_nfe)]
-
-    out_dt <- var_dt[mean_dt, on = .(score, quantiles, AN_nfe)]
-
-    return(out_dt)
-  }
-
+system.time(
 mdt <- 
-  emv_sfs_afr_nfe(sfs_small_afr_nfe, 
-                  conditional = 'AC_afr > 0', 
-                  make_round = TRUE, digits = 4)
+  rbindlist(
+  lapply(
+   -1L:4L, 
+    function(digits){
+    rbindlist(
+    lapply(
+     conditions, 
+     function(cond){
+       emv_sfs_afr_nfe(sfs_small_afr_nfe, 
+                       conditional = cond, 
+                       digits = digits)
+     }
+    ))
+    }
+  ))
+)
 
-mdt
+setkey(mdt, score, quantiles, AN_nfe, digits, conditional)
+mdt[digits == -1]
