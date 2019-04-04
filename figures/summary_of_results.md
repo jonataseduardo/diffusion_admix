@@ -101,3 +101,13 @@ in a populations.
 * Replicate the results of the slim simulations using WF diffusion simulations.
   This will need to be done using dadi since the Moments get numeric errors for
   values of 2Ns < -50 
+
+#Gnomad Data
+
+## Phenotypic Scores 
+
+![](./normalized_scores_quantililes.png)
+
+## Mean Frequency of deleterious mutations
+
+![](./mean_AF_afr_nfe.png)
