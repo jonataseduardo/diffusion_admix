@@ -114,6 +114,9 @@ in a populations.
 
 ## SFS projection
 
+Effect of the sfs projection on the NFE population for the variants in the most
+deleterious quantil of the fitcons score. 
+
 ![](./mean_project_nfe.png)
 
 ![](./numsites_project_nfe.png)
