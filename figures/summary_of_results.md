@@ -111,3 +111,16 @@ in a populations.
 ## Mean Frequency of deleterious mutations
 
 ![](./mean_AF_afr_nfe.png)
+
+## SFS projection
+
+![](./mean_project_nfe.png)
+
+![](./numsites_project_nfe.png)
+
+![](./var_project_nfe.png)
+
+
+
+
+
