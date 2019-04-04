@@ -117,9 +117,15 @@ in a populations.
 Effect of the sfs projection on the NFE population for the variants in the most
 deleterious quantil of the fitcons score. 
 
+### Effect on the mean AF
+
 ![](./mean_project_nfe.png)
 
+### Effect on the number of segragating sites in both populations
+
 ![](./numsites_project_nfe.png)
+
+### Effect on the AF variance
 
 ![](./var_project_nfe.png)
 
