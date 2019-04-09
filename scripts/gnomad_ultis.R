@@ -291,7 +291,8 @@ project_onepop_sfs  <-
 summarise_scores_norm_quantile <- 
   function(gad, 
            wd = 0.01, 
-           quant_th = 0.1){
+           quant_th = 0.1,
+           fname = 'normalized_scores_quantililes.png'){
 
     norm_scores <- 
       grep("_norm", names(gad), value = TRUE) 
@@ -328,7 +329,7 @@ summarise_scores_norm_quantile <-
     long_nq[, quality_rank := .GRP, keyby = .(quality, annotation)] 
 
     make_plot <- 
-      function(){
+      function(fname){
         ggplot(long_nq, aes(y = norm_score, x = quant, colour = annotation)) + 
           theme_classic() +
           scale_colour_viridis_d() + 
@@ -337,10 +338,10 @@ summarise_scores_norm_quantile <-
           theme(legend.position = 'bottom', 
                 legend.title = element_blank()) + 
           geom_line()
-        ggsave('normalized_scores_quantililes.png')
+        ggsave(fname)
       }
 
-    make_plot()
+    make_plot(fname)
   }
 
 apply_ttest <-
@@ -362,17 +363,30 @@ apply_ttest <-
              c(score_quantile, "estimate.mean of x", "estimate.mean of y"),
              c('quantiles', 'mean_AF_pop1', 'mean_AF_pop2'))
 
-
     old_t_names <- names(ttest_dt)
     new_t_names <- c('score', 'pop1', 'pop2', old_t_names) 
 
     ttest_dt[, `:=`(score = score, pop1 = pop1, pop2 = pop2)]
-
     setcolorder(ttest_dt, new_t_names)
+
+    t_cols <- c('statistic.t', 'p.value', 
+                'mean_AF_pop1', 'mean_AF_pop2', 
+                'conf.int1', 'conf.int2')
+    ttest_dt[, (t_cols) := lapply(.SD, as.numeric),
+                .SDcols = t_cols]
+
+    stats_dt <- 
+      gad[, .(var_AF_pop1 = var(AF_x),
+              var_AF_pop2 = var(AF_y), 
+              num_sites = .N), 
+          keyby = c(score_quantile)]
+    setnames(stats_dt, score_quantile, 'quantiles')
+
+    out_dt <- ttest_dt[stats_dt, on = .(quantiles)]
 
     setnames(gad, c("AF_x", "AF_y"), c(AF_pop1, AF_pop2))
 
-    return(ttest_dt[])
+    return(out_dt[])
   }
 
 emv_sfs_afr_nfe  <-
@@ -414,4 +428,26 @@ emv_sfs_afr_nfe  <-
     return(out_dt)
   }
 
+plabel <-
+  function(pvalue){
+    ifelse(pvalue > 0.05,
+       sprintf("%.2f", pvalue),
+       ifelse(pvalue > 0.01, "<0.05", 
+          ifelse(pvalue > 0.001, "<1e-2", "<1e-3"))
+    )
+  }
 
+mc_downsampling <-
+  function(gad, pop_list, AN_new){
+
+    af <- paste0("AF_", pop_list)
+    ac <- paste0("AC_", pop_list)
+    an <- paste0("AN_", pop_list)
+    gad <- copy(gad)
+
+    gad[, (ac) := lapply(.SD, function(y){rbinom(.N, AN_new,y)}), .SDcols = af ]
+    gad[, (an) := AN_new]
+    gad[, (af) := Map(`/`, mget(ac), mget(an))] 
+
+    return(rm_fixed_alleles(gad, ac, an))
+  }
